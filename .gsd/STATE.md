@@ -1,5 +1,4 @@
 ## Last Session Summary
-Project initialized via Phase 3 deep questioning (provided PRD).
-- SPEC.md finalized
-- ROADMAP.md created with 6 phases
-- REQUIREMENTS.md defined mapped to PRD
+Applied 'IMPLEMENTATION PLAN & ARCHITECTURE' specifications.
+- ARCHITECTURE.md updated with package structure and entity definitions.
+- STACK.md updated with exact libraries (Compose, Room, Hilt, Coroutines).
