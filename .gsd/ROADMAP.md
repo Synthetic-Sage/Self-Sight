@@ -14,12 +14,10 @@
 ## Phases
 
 ### Phase 1: Foundation & Architecture
-**Status**: ? Not Started
-**Objective**: Setup local database (Room), DI, Navigation, and Theme.
-**Requirements**: REQ-01, REQ-07, REQ-08
+**Status**: ✅ Complete
 
 ### Phase 2: Core Data Models & Repository
-**Status**: ? Not Started
+**Status**: ✅ Complete
 **Objective**: Define schemas for Tasks, Goals, and Journal Entries. Implement DAOs.
 **Requirements**: REQ-01, REQ-02, REQ-03, REQ-04
 
