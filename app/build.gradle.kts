@@ -64,4 +64,7 @@ dependencies {
 
     // Navigation Compose
     implementation("androidx.navigation:navigation-compose:2.7.7")
+
+    // Extended Material Icons (Timeline, MenuBook, IosShare, etc.)
+    implementation("androidx.compose.material:material-icons-extended")
 }

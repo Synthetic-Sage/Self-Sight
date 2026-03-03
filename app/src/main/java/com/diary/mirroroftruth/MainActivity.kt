@@ -7,9 +7,10 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Timeline
 import androidx.compose.material3.*
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -29,8 +30,9 @@ private data class BottomNavItem(
 
 private val bottomNavItems = listOf(
     BottomNavItem("Home", Icons.Default.Home, Screen.Home.route),
-    BottomNavItem("Journal", Icons.Default.Edit, Screen.Journal.route),
-    BottomNavItem("Insights", Icons.Default.Star, Screen.Insights.route)
+    BottomNavItem("Journal", Icons.Default.MenuBook, Screen.Journal.route),
+    BottomNavItem("Insights", Icons.Default.Timeline, Screen.Insights.route),
+    BottomNavItem("Settings", Icons.Default.Settings, Screen.Settings.route)
 )
 
 @AndroidEntryPoint
