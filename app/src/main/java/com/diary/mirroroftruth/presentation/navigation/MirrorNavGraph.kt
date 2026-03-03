@@ -9,18 +9,34 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.diary.mirroroftruth.presentation.home.HomeScreen
 import com.diary.mirroroftruth.presentation.home.HomeViewModel
+import com.diary.mirroroftruth.presentation.journal.JournalScreen
+import com.diary.mirroroftruth.presentation.journal.JournalViewModel
+
+import androidx.compose.ui.Modifier
 
 @Composable
-fun MirrorNavGraph(navController: NavHostController) {
+fun MirrorNavGraph(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
     NavHost(
         navController = navController,
-        startDestination = Screen.Home.route
+        startDestination = Screen.Home.route,
+        modifier = modifier
     ) {
         composable(route = Screen.Home.route) {
             val viewModel: HomeViewModel = hiltViewModel()
             val state by viewModel.state.collectAsState()
-            
             HomeScreen(
+                state = state,
+                onEvent = viewModel::onEvent
+            )
+        }
+
+        composable(route = Screen.Journal.route) {
+            val viewModel: JournalViewModel = hiltViewModel()
+            val state by viewModel.state.collectAsState()
+            JournalScreen(
                 state = state,
                 onEvent = viewModel::onEvent
             )
