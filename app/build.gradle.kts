@@ -82,4 +82,7 @@ dependencies {
     
     // Gson for JSON backup
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Coil for AsyncImage
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

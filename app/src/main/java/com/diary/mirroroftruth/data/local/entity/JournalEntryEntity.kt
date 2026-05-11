@@ -12,5 +12,6 @@ data class JournalEntryEntity(
     val content: String,
     val wentWell: String,
     val toImprove: String,
-    val learning: String
+    val learning: String,
+    val imagePath: String? = null
 )

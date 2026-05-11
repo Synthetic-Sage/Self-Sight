@@ -12,5 +12,6 @@ data class JournalState(
     val currentDate: Long = System.currentTimeMillis(),
     val isSaved: Boolean = false,
     val isLoading: Boolean = false,
-    val isPastDate: Boolean = false
+    val isPastDate: Boolean = false,
+    val imagePath: String? = null
 )

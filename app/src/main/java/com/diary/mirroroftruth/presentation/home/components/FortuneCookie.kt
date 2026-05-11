@@ -19,6 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.graphics.drawscope.clipRect
 
 enum class CookieState {
     Idle,
@@ -37,13 +41,6 @@ fun FortuneCookie(quote: String, modifier: Modifier = Modifier) {
         targetValue = shakeRotation,
         animationSpec = spring(dampingRatio = Spring.DampingRatioHighBouncy, stiffness = Spring.StiffnessHigh),
         label = "shake"
-    )
-
-    // Fade out cookie when unrolling begins
-    val cookieAlpha by animateFloatAsState(
-        targetValue = if (cookieState == CookieState.Idle || cookieState == CookieState.Cracking) 1f else 0f,
-        animationSpec = tween(300),
-        label = "cookie_alpha"
     )
 
     LaunchedEffect(cookieState) {
@@ -109,20 +106,86 @@ fun FortuneCookie(quote: String, modifier: Modifier = Modifier) {
                         color = Color.DarkGray
                     ),
                     modifier = Modifier
+                        .fillMaxWidth()
+                        .drawWithContent {
+                            drawContent()
+                            // Faint wrinkles for crumpled paper effect
+                            drawLine(
+                                color = Color.Black.copy(alpha = 0.05f),
+                                start = Offset(0f, size.height * 0.3f),
+                                end = Offset(size.width, size.height * 0.4f),
+                                strokeWidth = 2f
+                            )
+                            drawLine(
+                                color = Color.Black.copy(alpha = 0.05f),
+                                start = Offset(size.width * 0.2f, 0f),
+                                end = Offset(size.width * 0.3f, size.height),
+                                strokeWidth = 2f
+                            )
+                            drawLine(
+                                color = Color.Black.copy(alpha = 0.03f),
+                                start = Offset(0f, size.height * 0.7f),
+                                end = Offset(size.width, size.height * 0.6f),
+                                strokeWidth = 3f
+                            )
+                        }
                         .padding(16.dp)
                         .alpha(textAlpha),
                     textAlign = TextAlign.Center
                 )
+                if (textAlpha > 0.8f) {
+                    Text(
+                        text = "Come back tomorrow for a new quote",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f),
+                        modifier = Modifier.padding(bottom = 8.dp).fillMaxWidth().alpha(textAlpha),
+                        textAlign = TextAlign.Center
+                    )
+                }
             }
         }
 
-        // The Cookie
-        if (cookieAlpha > 0f) {
-            Box(contentAlignment = Alignment.Center, modifier = Modifier.alpha(cookieAlpha)) {
+        // The Cookie Halves
+        val splitOffset by animateDpAsState(
+            targetValue = if (cookieState >= CookieState.Unrolling) 80.dp else 0.dp,
+            animationSpec = tween(500, easing = FastOutSlowInEasing)
+        )
+        val splitAngle by animateFloatAsState(
+            targetValue = if (cookieState >= CookieState.Unrolling) 45f else 0f,
+            animationSpec = tween(500)
+        )
+        val cookieFade by animateFloatAsState(
+            targetValue = if (cookieState == CookieState.Revealed) 0f else 1f,
+            animationSpec = tween(400, delayMillis = 200)
+        )
+
+        if (cookieFade > 0f) {
+            Box(contentAlignment = Alignment.Center, modifier = Modifier.alpha(cookieFade)) {
+                // Left half
                 Text(
                     text = "🥠",
                     fontSize = 64.sp,
-                    modifier = Modifier.rotate(shake)
+                    modifier = Modifier
+                        .offset(x = -splitOffset)
+                        .rotate(shake - splitAngle)
+                        .drawWithContent {
+                            clipRect(right = size.width / 2.3f) {
+                                this@drawWithContent.drawContent()
+                            }
+                        }
+                )
+                // Right half
+                Text(
+                    text = "🥠",
+                    fontSize = 64.sp,
+                    modifier = Modifier
+                        .offset(x = splitOffset)
+                        .rotate(shake + splitAngle)
+                        .drawWithContent {
+                            clipRect(left = size.width / 2.3f) {
+                                this@drawWithContent.drawContent()
+                            }
+                        }
                 )
                 
                 if (cookieState == CookieState.Idle) {

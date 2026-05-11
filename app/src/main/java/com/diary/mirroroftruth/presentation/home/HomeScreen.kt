@@ -16,6 +16,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
@@ -46,6 +49,8 @@ fun HomeScreen(
     val dateFormatter = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault())
     val todayString = dateFormatter.format(Date(state.currentDate))
     var newTaskTitle by remember { mutableStateOf("") }
+    var newTaskPriority by remember { mutableStateOf<com.diary.mirroroftruth.domain.model.TaskPriority>(com.diary.mirroroftruth.domain.model.TaskPriority.NONE) }
+    var isTaskInputFocused by remember { mutableStateOf(false) }
     var showAddStepSheet by remember { mutableStateOf(false) }
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -303,34 +308,68 @@ fun HomeScreen(
             }
 
             item {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    OutlinedTextField(
-                        value = newTaskTitle,
-                        onValueChange = { newTaskTitle = it },
-                        label = { Text("Add new task") },
-                        modifier = Modifier.weight(1f),
-                        singleLine = true
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    IconButton(
-                        onClick = {
-                            if (newTaskTitle.isNotBlank()) {
-                                onEvent(HomeEvent.OnAddTask(newTaskTitle))
-                                newTaskTitle = ""
-                            }
-                        },
-                        modifier = Modifier.size(48.dp)
+                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = "Add Task",
-                            tint = MaterialTheme.colorScheme.primary
+                        OutlinedTextField(
+                            value = newTaskTitle,
+                            onValueChange = { newTaskTitle = it },
+                            label = { Text("Add new task") },
+                            modifier = Modifier.weight(1f).onFocusChanged { isTaskInputFocused = it.isFocused },
+                            singleLine = true
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        IconButton(
+                            onClick = {
+                                if (newTaskTitle.isNotBlank()) {
+                                    val colorTag = if (newTaskPriority != com.diary.mirroroftruth.domain.model.TaskPriority.NONE) newTaskPriority.colorHex else null
+                                    onEvent(HomeEvent.OnAddTask(newTaskTitle, colorTag))
+                                    newTaskTitle = ""
+                                    newTaskPriority = com.diary.mirroroftruth.domain.model.TaskPriority.NONE
+                                }
+                            },
+                            modifier = Modifier.size(48.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = "Add Task",
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    }
+                    
+                    // Priority Selector (Visible when typing)
+                    AnimatedVisibility(visible = isTaskInputFocused || newTaskTitle.isNotBlank()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            com.diary.mirroroftruth.domain.model.TaskPriority.values().filter { it != com.diary.mirroroftruth.domain.model.TaskPriority.NONE }.forEach { priority ->
+                                val color = Color(android.graphics.Color.parseColor(priority.colorHex))
+                                val isSelected = newTaskPriority == priority
+                                
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(16.dp))
+                                        .background(if (isSelected) color.copy(alpha = 0.2f) else Color.Transparent)
+                                        .clickable { 
+                                            newTaskPriority = if (isSelected) com.diary.mirroroftruth.domain.model.TaskPriority.NONE else priority 
+                                        }
+                                        .padding(horizontal = 8.dp, vertical = 4.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Box(modifier = Modifier.size(12.dp).clip(androidx.compose.foundation.shape.CircleShape).background(color))
+                                    Spacer(modifier = Modifier.width(4.dp))
+                                    Text(
+                                        text = priority.label,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = if (isSelected) color else MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
                     }
                 }
             }

@@ -11,4 +11,6 @@ sealed interface JournalEvent {
     object OnSaveEntry : JournalEvent
     object NavigateToPreviousDay : JournalEvent
     object NavigateToNextDay : JournalEvent
+    data class OnImageAdded(val uri: android.net.Uri) : JournalEvent
+    object OnImageRemoved : JournalEvent
 }

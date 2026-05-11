@@ -70,7 +70,8 @@ fun JournalEntryEntity.toDomain(): JournalEntry {
         content = content,
         wentWell = wentWell,
         toImprove = toImprove,
-        learning = learning
+        learning = learning,
+        imagePath = imagePath
     )
 }
 
@@ -82,6 +83,7 @@ fun JournalEntry.toEntity(): JournalEntryEntity {
         content = content,
         wentWell = wentWell,
         toImprove = toImprove,
-        learning = learning
+        learning = learning,
+        imagePath = imagePath
     )
 }

@@ -9,7 +9,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material.icons.filled.Lock
+import androidx.compose.material.icons.filled.Download
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,6 +24,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import coil.compose.AsyncImage
+import java.io.File
 import com.diary.mirroroftruth.presentation.journal.components.JournalPromptField
 import com.diary.mirroroftruth.presentation.journal.components.MoodSelector
 import java.text.SimpleDateFormat
@@ -45,6 +57,14 @@ fun JournalScreen(
     val displayDate = dateFormatter.format(Date(state.currentDate))
     val isToday = todayFormatter.format(Date(state.currentDate)) ==
             todayFormatter.format(Date(System.currentTimeMillis()))
+
+    val context = LocalContext.current
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickVisualMedia(),
+        onResult = { uri ->
+            uri?.let { onEvent(JournalEvent.OnImageAdded(it)) }
+        }
+    )
 
     Scaffold(
         topBar = {
@@ -110,6 +130,75 @@ fun JournalScreen(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
+            // ── Photo Memory ──────────────────────────────────────────────────
+            item {
+                if (state.imagePath != null) {
+                    Box(modifier = Modifier.fillMaxWidth().height(250.dp).clip(RoundedCornerShape(12.dp))) {
+                        AsyncImage(
+                            model = state.imagePath,
+                            contentDescription = "Journal Memory",
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                        // Top Right buttons: Delete and Save
+                        Row(
+                            modifier = Modifier.align(Alignment.TopEnd).padding(8.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        ) {
+                            IconButton(
+                                onClick = {
+                                    try {
+                                        val file = File(state.imagePath)
+                                        val resolver = context.contentResolver
+                                        val contentValues = android.content.ContentValues().apply {
+                                            put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, "SelfSight_Memory_${System.currentTimeMillis()}.jpg")
+                                            put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
+                                            put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/SelfSight")
+                                        }
+                                        val destUri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
+                                        destUri?.let { dest ->
+                                            resolver.openOutputStream(dest)?.use { outStream ->
+                                                file.inputStream().use { inStream ->
+                                                    inStream.copyTo(outStream)
+                                                }
+                                            }
+                                            android.widget.Toast.makeText(context, "Saved to Pictures/SelfSight", android.widget.Toast.LENGTH_SHORT).show()
+                                        }
+                                    } catch (e: Exception) {
+                                        e.printStackTrace()
+                                    }
+                                },
+                                modifier = Modifier.size(36.dp).background(Color.Black.copy(alpha = 0.5f), androidx.compose.foundation.shape.CircleShape)
+                            ) {
+                                Icon(Icons.Default.Download, contentDescription = "Save to Gallery", tint = Color.White, modifier = Modifier.size(18.dp))
+                            }
+                            if (!state.isPastDate) {
+                                IconButton(
+                                    onClick = { onEvent(JournalEvent.OnImageRemoved) },
+                                    modifier = Modifier.size(36.dp).background(Color.Black.copy(alpha = 0.5f), androidx.compose.foundation.shape.CircleShape)
+                                ) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Delete Memory", tint = Color.White, modifier = Modifier.size(18.dp))
+                                }
+                            }
+                        }
+                    }
+                } else if (!state.isPastDate) {
+                    OutlinedButton(
+                        onClick = {
+                            photoPickerLauncher.launch(
+                                androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                            )
+                        },
+                        modifier = Modifier.fillMaxWidth().height(56.dp),
+                        shape = RoundedCornerShape(12.dp)
+                    ) {
+                        Icon(Icons.Default.Image, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add Photo Memory", style = MaterialTheme.typography.titleSmall)
+                    }
+                }
+            }
+
             // ── Vibe Tags ─────────────────────────────────────────────────────
             item {
                 MoodSelector(

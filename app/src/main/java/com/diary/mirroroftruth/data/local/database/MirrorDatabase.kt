@@ -17,7 +17,7 @@ import com.diary.mirroroftruth.data.local.entity.TaskEntity
         GoalEntity::class,
         JournalEntryEntity::class
     ],
-    version = 5,
+    version = 6,
     exportSchema = false
 )
 @androidx.room.TypeConverters(Converters::class)
@@ -30,6 +30,12 @@ abstract class MirrorDatabase : RoomDatabase() {
         val MIGRATION_4_5 = object : Migration(4, 5) {
             override fun migrate(db: SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE goals ADD COLUMN type TEXT NOT NULL DEFAULT 'BIG'")
+            }
+        }
+
+        val MIGRATION_5_6 = object : Migration(5, 6) {
+            override fun migrate(db: SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE journal_entries ADD COLUMN imagePath TEXT")
             }
         }
     }

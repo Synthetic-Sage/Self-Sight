@@ -24,7 +24,7 @@ object DatabaseModule {
             MirrorDatabase::class.java,
             "mirror_db"
         )
-        .addMigrations(MirrorDatabase.MIGRATION_4_5)
+        .addMigrations(MirrorDatabase.MIGRATION_4_5, MirrorDatabase.MIGRATION_5_6)
         .fallbackToDestructiveMigration()
         .build()
     }

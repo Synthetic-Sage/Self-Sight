@@ -6,20 +6,25 @@ import com.diary.mirroroftruth.domain.model.JournalEntry
 import com.diary.mirroroftruth.domain.model.Task
 import com.diary.mirroroftruth.domain.repository.JournalEntryRepository
 import com.diary.mirroroftruth.domain.repository.TaskRepository
+import android.content.Context
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 import java.util.Calendar
 import javax.inject.Inject
 
 @HiltViewModel
 class JournalViewModel @Inject constructor(
     private val journalRepo: JournalEntryRepository,
-    private val taskRepo: TaskRepository
+    private val taskRepo: TaskRepository,
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(JournalState())
@@ -70,6 +75,7 @@ class JournalViewModel @Inject constructor(
                 toImprove = "",
                 learning = "",
                 newTasks = emptyList(),
+                imagePath = null,
                 isSaved = false
             )
         }
@@ -87,7 +93,8 @@ class JournalViewModel @Inject constructor(
                             wentWell = entry.wentWell,
                             toImprove = entry.toImprove,
                             learning = entry.learning,
-                            additionalAnswers = if (entry.content.isEmpty()) emptyList() else entry.content.split("|~|")
+                            additionalAnswers = if (entry.content.isEmpty()) emptyList() else entry.content.split("|~|"),
+                            imagePath = entry.imagePath
                         )
                     }
                 }
@@ -143,6 +150,33 @@ class JournalViewModel @Inject constructor(
             is JournalEvent.OnSaveEntry -> {
                 if (!current.isPastDate) saveEntry()
             }
+            is JournalEvent.OnImageAdded -> {
+                if (current.isPastDate) return
+                viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                    try {
+                        val memoriesDir = File(context.filesDir, "memories")
+                        if (!memoriesDir.exists()) memoriesDir.mkdirs()
+                        
+                        val file = File(memoriesDir, "memory_${System.currentTimeMillis()}.jpg")
+                        context.contentResolver.openInputStream(event.uri)?.use { input ->
+                            FileOutputStream(file).use { output ->
+                                input.copyTo(output)
+                            }
+                        }
+                        
+                        _state.update { it.copy(imagePath = file.absolutePath, isSaved = false) }
+                    } catch (e: Exception) {
+                        e.printStackTrace()
+                    }
+                }
+            }
+            is JournalEvent.OnImageRemoved -> {
+                if (current.isPastDate) return
+                current.imagePath?.let { path ->
+                    try { File(path).delete() } catch (e: Exception) {}
+                }
+                _state.update { it.copy(imagePath = null, isSaved = false) }
+            }
         }
     }
 
@@ -155,7 +189,8 @@ class JournalViewModel @Inject constructor(
                 content = current.additionalAnswers.joinToString("|~|"),
                 wentWell = current.wentWell,
                 toImprove = current.toImprove,
-                learning = current.learning
+                learning = current.learning,
+                imagePath = current.imagePath
             )
             journalRepo.insertJournalEntry(entry)
 
