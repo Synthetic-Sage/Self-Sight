@@ -10,12 +10,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.*
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -29,7 +25,6 @@ import com.diary.mirroroftruth.presentation.home.components.AddStepBottomSheet
 import com.diary.mirroroftruth.presentation.home.components.CelebrationOverlay
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -37,7 +32,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-
 import org.burnoutcrew.reorderable.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -156,7 +150,7 @@ fun HomeScreen(
                         )
                     }
                     
-                    androidx.compose.animation.AnimatedVisibility(visible = expanded) {
+                    AnimatedVisibility(visible = expanded) {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),
@@ -194,7 +188,7 @@ fun HomeScreen(
                         )
                     }
                     
-                    androidx.compose.animation.AnimatedVisibility(visible = expanded) {
+                    AnimatedVisibility(visible = expanded) {
                         LazyRow(
                             contentPadding = PaddingValues(horizontal = 16.dp),
                             horizontalArrangement = Arrangement.spacedBy(16.dp),

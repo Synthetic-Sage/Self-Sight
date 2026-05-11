@@ -387,21 +387,45 @@ fun SettingsScreen(
             }
             if (state.showFaq) {
                 item {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f)).padding(16.dp)) {
-                        Text("Q: What is Self Sight?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: Self Sight is your offline-first, private journaling and goal-tracking app. All data stays strictly on your device.", style = MaterialTheme.typography.bodySmall)
-                        Spacer(Modifier.height(12.dp))
-                        Text("Q: What are Big Steps vs Small Steps?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: Big steps are major life goals (like reading 5 books). They track a numbered target. Small steps are quick daily tasks or habits.", style = MaterialTheme.typography.bodySmall)
-                        Spacer(Modifier.height(12.dp))
-                        Text("Q: How do I increment a Big Step?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: On the Home Screen, if a Big Step has a target > 1, tap the small (+) button on the card to increment it.", style = MaterialTheme.typography.bodySmall)
-                        Spacer(Modifier.height(12.dp))
-                        Text("Q: How does Backup work?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: Export creates an encrypted JSON file holding your journal entries and goals. Keep the password safe, as you will need it to Import the data on a new device.", style = MaterialTheme.typography.bodySmall)
-                        Spacer(Modifier.height(12.dp))
-                        Text("Q: Why is the app slightly laggy when scrolling?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: If you notice lag, it is because you are running a 'Debug' build of the app. Once a 'Release' version is compiled, it runs silky smooth at 60fps!", style = MaterialTheme.typography.bodySmall)
+                    Column(
+                        modifier = Modifier
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+                            .padding(16.dp)
+                    ) {
+                        // ── General ──
+                        Text("General", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(bottom = 8.dp))
+                        
+                        FaqItem("What is the purpose of this app?", "This app is a hybrid daily planner and reflection journal. It is designed to help you break down ambitious goals into manageable actions while providing a quiet space to reflect on your daily mindset, habits, and personal growth.")
+                        FaqItem("Do I need an internet connection to use the app?", "No. The app is built entirely offline-first. Everything you write, track, and save is stored locally on your device, ensuring maximum privacy and speed.")
+                        
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        
+                        // ── Managing Tasks ──
+                        Text("Managing Tasks & Goals", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(bottom = 8.dp))
+                        
+                        FaqItem("What is the difference between Big Steps, Small Steps, and Daily Tasks?", "• Big Steps: Your long-term goals or major projects.\n• Small Steps: Actionable milestones for Big Steps.\n• Daily Tasks: Immediate, everyday actions you check off.")
+                        FaqItem("What happens when I complete all my tasks for the day?", "Checking off your tasks contributes to your daily productivity, which you can reflect on in the Evening Journal. The app clears your daily task list the next day so you can start fresh.")
+                        
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        
+                        // ── Journaling ──
+                        Text("Journaling & Insights", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(bottom = 8.dp))
+                        
+                        FaqItem("Can I change the daily reflection questions?", "Yes. You can customize your experience by navigating to Settings. From there, you can toggle default prompts, edit existing questions, or add your own custom prompts.")
+                        FaqItem("How does the \"Vibe\" tracker work?", "When you log your reflection, you can select a \"Vibe\" that represents your mood. The app tracks these and visualizes patterns in the Insights tab.")
+                        FaqItem("How is my daily streak calculated?", "Your streak increases for every consecutive day you save a journal entry. If you miss a day, the streak resets, but your history remains safe.")
+                        
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 12.dp), color = MaterialTheme.colorScheme.outlineVariant)
+                        
+                        // ── Privacy ──
+                        Text("Privacy, Data & Backups", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(bottom = 8.dp))
+                        
+                        FaqItem("Who can see my journal entries?", "Only you. Because the app does not use cloud servers, your data never leaves your phone. There is no external tracking.")
+                        FaqItem("How do I back up my data if I get a new phone?", "Go to Settings > Export Journal Data to create a backup file. Transfer this file to your new phone and use the Import Backup option.")
+                        FaqItem("Why does the backup require a password?", "To ensure your private entries remain secure if the backup file is accidentally shared, the app encrypts it using a password of your choice.")
+                        FaqItem("I forgot my backup password. Can I reset it?", "No. For your privacy, there is no central server. If you lose the password, the file cannot be restored. Use a password you will easily remember.")
                     }
                 }
             }
@@ -564,4 +588,21 @@ private fun InfoRow(icon: ImageVector?, label: String, value: String) {
         Text(text = value, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
     HorizontalDivider(modifier = Modifier.padding(start = 56.dp), color = MaterialTheme.colorScheme.surfaceVariant)
+}
+
+@Composable
+private fun FaqItem(question: String, answer: String) {
+    Column(modifier = Modifier.padding(vertical = 8.dp)) {
+        Text(
+            text = "Q: $question",
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Bold),
+            color = MaterialTheme.colorScheme.primary
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+            text = "A: $answer",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+    }
 }
