@@ -46,7 +46,7 @@ class ReminderReceiver : BroadcastReceiver() {
             // Use a default icon since we don't know the exact drawable name, android.R.drawable.ic_dialog_info works
             .setSmallIcon(android.R.drawable.ic_dialog_info)
             .setContentTitle("Time to Reflect 📖")
-            .setContentText("How did your day go? Take a moment to write in your Mirror of Truth.")
+            .setContentText("How did your day go? Take a moment to write in Self Sight.")
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pendingIntent)
             .setAutoCancel(true)

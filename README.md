@@ -1,8 +1,6 @@
-# Mirror of Truth (Codename)
+# Self Sight
 
-An offline-first, private-by-design journaling and goal-tracking Android application built with Kotlin and Jetpack Compose. 
-
-> *Note: "Mirror of Truth" is a codename. Feel free to rename this project when compiling for your own use.*
+An offline-first, private-by-design journaling and goal-tracking Android application built with Kotlin and Jetpack Compose.
 
 ## Features
 - **Offline First**: All your data is stored locally using Room Database. Your deeply personal diary never leaves your device unless you choose to export it.
@@ -21,7 +19,7 @@ An offline-first, private-by-design journaling and goal-tracking Android applica
 - **Background Processing**: WorkManager (for daily reminders)
 
 ## Building the Project
-1. Clone the repository: `git clone https://github.com/yourusername/mirror-of-truth.git`
+1. Clone the repository: `git clone https://github.com/yourusername/self-sight.git`
 2. Open the project in Android Studio.
 3. Sync Gradle and run on an emulator or physical device.
 

@@ -2,8 +2,8 @@ package com.diary.mirroroftruth.core.theme
 
 import androidx.compose.ui.graphics.Color
 
-val ParchmentBase = Color(0xFFFDFBF7) // Very light warm white
-val ParchmentDark = Color(0xFFF4EFE6) // Slightly darker for cards
+val ParchmentBase = Color(0xFFFFF6E5) // Warm cream/light orange (Eye care feel)
+val ParchmentDark = Color(0xFFF5E6CC) // Slightly darker warm tone for cards
 val InkBlack = Color(0xFF2C2C2C) // Soft black/dark grey for text
 val InkFaded = Color(0xFF7A7A7A) // Faded ink
 val AccentRust = Color(0xFFC26D5C) // Soft brick red/rust

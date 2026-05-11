@@ -381,21 +381,27 @@ fun SettingsScreen(
                 ActionRow(
                     icon = Icons.Default.HelpOutline,
                     label = "Frequently Asked Questions",
-                    sublabel = "Learn how to use Mirror of Truth",
+                    sublabel = "Learn how to use Self Sight",
                     onClick = { onEvent(SettingsEvent.OnToggleFaq) }
                 )
             }
             if (state.showFaq) {
                 item {
-                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f)).padding(16.dp)) {
-                        Text("Q: What are Big Steps vs Small Steps?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: Big steps are major life goals (like reading 5 books). Small steps are quick daily tasks.", style = MaterialTheme.typography.bodySmall)
+                    Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha=0.3f)).padding(16.dp)) {
+                        Text("Q: What is Self Sight?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("A: Self Sight is your offline-first, private journaling and goal-tracking app. All data stays strictly on your device.", style = MaterialTheme.typography.bodySmall)
                         Spacer(Modifier.height(12.dp))
-                        Text("Q: Where is my data stored?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: Only on this device. We do not use cloud servers to ensure your absolute privacy.", style = MaterialTheme.typography.bodySmall)
+                        Text("Q: What are Big Steps vs Small Steps?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("A: Big steps are major life goals (like reading 5 books). They track a numbered target. Small steps are quick daily tasks or habits.", style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(12.dp))
+                        Text("Q: How do I increment a Big Step?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("A: On the Home Screen, if a Big Step has a target > 1, tap the small (+) button on the card to increment it.", style = MaterialTheme.typography.bodySmall)
                         Spacer(Modifier.height(12.dp))
                         Text("Q: How does Backup work?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
-                        Text("A: Export creates an encrypted JSON file that requires a password. Keep it safe to restore your data later.", style = MaterialTheme.typography.bodySmall)
+                        Text("A: Export creates an encrypted JSON file holding your journal entries and goals. Keep the password safe, as you will need it to Import the data on a new device.", style = MaterialTheme.typography.bodySmall)
+                        Spacer(Modifier.height(12.dp))
+                        Text("Q: Why is the app slightly laggy when scrolling?", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                        Text("A: If you notice lag, it is because you are running a 'Debug' build of the app. Once a 'Release' version is compiled, it runs silky smooth at 60fps!", style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -403,7 +409,7 @@ fun SettingsScreen(
             // ── About ─────────────────────────────────────────────────────────
             item { SectionHeader("About") }
             item {
-                InfoRow(icon = null, label = "Mirror of Truth", value = "v1.0-beta")
+                InfoRow(icon = null, label = "Self Sight", value = "v1.0-beta")
             }
             item { SectionDivider() }
             item {
@@ -420,7 +426,7 @@ fun SettingsScreen(
                         val intent = Intent(Intent.ACTION_SENDTO).apply {
                             data = Uri.parse("mailto:")
                             putExtra(Intent.EXTRA_EMAIL, arrayOf("developer@example.com"))
-                            putExtra(Intent.EXTRA_SUBJECT, "Mirror of Truth Feedback")
+                            putExtra(Intent.EXTRA_SUBJECT, "Self Sight Feedback")
                         }
                         context.startActivity(intent)
                     }

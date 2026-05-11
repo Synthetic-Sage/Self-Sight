@@ -24,17 +24,17 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
 
     val alphaAnim = animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0f,
-        animationSpec = tween(durationMillis = 1000)
+        animationSpec = tween(durationMillis = 500)
     )
 
     val scaleAnim = animateFloatAsState(
         targetValue = if (startAnimation) 1f else 0.5f,
-        animationSpec = tween(durationMillis = 1000)
+        animationSpec = tween(durationMillis = 500)
     )
 
     LaunchedEffect(key1 = true) {
         startAnimation = true
-        delay(2000) // 2 second delay for splash
+        delay(800) // Reduced delay for faster app startup
         onSplashFinished()
     }
 
@@ -58,7 +58,7 @@ fun SplashScreen(onSplashFinished: () -> Unit) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             Text(
-                text = "Mirror of Truth",
+                text = "Self Sight",
                 style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
                 color = MaterialTheme.colorScheme.onBackground
             )
