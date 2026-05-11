@@ -15,7 +15,9 @@ fun TaskEntity.toDomain(): Task {
         description = description,
         isCompleted = isCompleted,
         createdAt = createdAt,
-        dueDate = dueDate
+        dueDate = dueDate,
+        colorTag = colorTag,
+        positionIndex = positionIndex
     )
 }
 
@@ -26,7 +28,9 @@ fun Task.toEntity(): TaskEntity {
         description = description,
         isCompleted = isCompleted,
         createdAt = createdAt,
-        dueDate = dueDate
+        dueDate = dueDate,
+        colorTag = colorTag,
+        positionIndex = positionIndex
     )
 }
 
@@ -38,6 +42,7 @@ fun GoalEntity.toDomain(): Goal {
         description = description,
         progress = progress,
         target = target,
+        type = type,
         createdAt = createdAt,
         deadline = deadline
     )
@@ -50,6 +55,7 @@ fun Goal.toEntity(): GoalEntity {
         description = description,
         progress = progress,
         target = target,
+        type = type,
         createdAt = createdAt,
         deadline = deadline
     )
@@ -60,9 +66,11 @@ fun JournalEntryEntity.toDomain(): JournalEntry {
     return JournalEntry(
         id = id,
         date = date,
-        mood = mood,
+        emotionTags = emotionTags,
         content = content,
-        promptResponses = promptResponses
+        wentWell = wentWell,
+        toImprove = toImprove,
+        learning = learning
     )
 }
 
@@ -70,8 +78,10 @@ fun JournalEntry.toEntity(): JournalEntryEntity {
     return JournalEntryEntity(
         id = id,
         date = date,
-        mood = mood,
+        emotionTags = emotionTags,
         content = content,
-        promptResponses = promptResponses
+        wentWell = wentWell,
+        toImprove = toImprove,
+        learning = learning
     )
 }

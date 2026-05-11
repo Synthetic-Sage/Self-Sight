@@ -3,8 +3,11 @@ package com.diary.mirroroftruth.presentation.journal
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.diary.mirroroftruth.domain.model.JournalEntry
+import com.diary.mirroroftruth.domain.model.Task
 import com.diary.mirroroftruth.domain.repository.JournalEntryRepository
+import com.diary.mirroroftruth.domain.repository.TaskRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -15,37 +18,76 @@ import javax.inject.Inject
 
 @HiltViewModel
 class JournalViewModel @Inject constructor(
-    private val journalRepo: JournalEntryRepository
+    private val journalRepo: JournalEntryRepository,
+    private val taskRepo: TaskRepository
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(JournalState())
     val state: StateFlow<JournalState> = _state.asStateFlow()
 
+    /** Start-of-today in millis (recomputed each time so midnight roll-over is safe) */
     private val startOfToday: Long
         get() = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, 0)
-            set(Calendar.MINUTE, 0)
-            set(Calendar.SECOND, 0)
-            set(Calendar.MILLISECOND, 0)
+            set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0); set(Calendar.MILLISECOND, 0)
         }.timeInMillis
 
+    /** The date currently being viewed (start-of-day millis) */
+    private var viewingDate: Long = startOfToday
+
+    private var entryLoadJob: Job? = null
+
     init {
-        _state.update { it.copy(currentDate = startOfToday) }
-        loadTodaysEntry()
+        viewingDate = startOfToday
+        _state.update { it.copy(currentDate = viewingDate, isPastDate = false) }
+        loadEntryForDate(viewingDate)
     }
 
-    private fun loadTodaysEntry() {
-        viewModelScope.launch {
-            journalRepo.getJournalEntryForDate(startOfToday).collect { entry ->
+    // ── Date navigation ────────────────────────────────────────────────────────
+
+    private fun goToPreviousDay() {
+        viewingDate -= 86_400_000L
+        switchToDate(viewingDate)
+    }
+
+    private fun goToNextDay() {
+        val nextDate = viewingDate + 86_400_000L
+        // Don't allow navigation beyond today
+        if (nextDate > startOfToday) return
+        viewingDate = nextDate
+        switchToDate(viewingDate)
+    }
+
+    private fun switchToDate(date: Long) {
+        val isPast = date < startOfToday
+        _state.update {
+            it.copy(
+                currentDate = date,
+                isPastDate = isPast,
+                // Clear input state — will be refilled from DB if an entry exists
+                selectedTags = emptyList(),
+                wentWell = "",
+                toImprove = "",
+                learning = "",
+                newTasks = emptyList(),
+                isSaved = false
+            )
+        }
+        loadEntryForDate(date)
+    }
+
+    private fun loadEntryForDate(date: Long) {
+        entryLoadJob?.cancel()
+        entryLoadJob = viewModelScope.launch {
+            journalRepo.getJournalEntryForDate(date).collect { entry ->
                 if (entry != null) {
-                    val parts = entry.promptResponses.split("|")
                     _state.update {
                         it.copy(
-                            selectedMood = entry.mood,
-                            wentWell = parts.getOrElse(0) { "" },
-                            challenges = parts.getOrElse(1) { "" },
-                            gratitude = parts.getOrElse(2) { "" },
-                            tomorrowsTask = entry.content
+                            selectedTags = entry.emotionTags,
+                            wentWell = entry.wentWell,
+                            toImprove = entry.toImprove,
+                            learning = entry.learning,
+                            additionalAnswers = if (entry.content.isEmpty()) emptyList() else entry.content.split("|~|")
                         )
                     }
                 }
@@ -53,14 +95,54 @@ class JournalViewModel @Inject constructor(
         }
     }
 
+    // ── Event handling ─────────────────────────────────────────────────────────
+
     fun onEvent(event: JournalEvent) {
+        val current = _state.value
         when (event) {
-            is JournalEvent.OnMoodSelected -> _state.update { it.copy(selectedMood = event.mood, isSaved = false) }
-            is JournalEvent.OnWentWellChanged -> _state.update { it.copy(wentWell = event.text, isSaved = false) }
-            is JournalEvent.OnChallengesChanged -> _state.update { it.copy(challenges = event.text, isSaved = false) }
-            is JournalEvent.OnGratitudeChanged -> _state.update { it.copy(gratitude = event.text, isSaved = false) }
-            is JournalEvent.OnTomorrowsTaskChanged -> _state.update { it.copy(tomorrowsTask = event.text, isSaved = false) }
-            is JournalEvent.OnSaveEntry -> saveEntry()
+            is JournalEvent.NavigateToPreviousDay -> goToPreviousDay()
+            is JournalEvent.NavigateToNextDay -> goToNextDay()
+
+            is JournalEvent.OnTagToggled -> {
+                if (current.isPastDate) return   // read-only for past
+                val tags = current.selectedTags.toMutableList()
+                if (tags.contains(event.tag)) tags.remove(event.tag) else tags.add(event.tag)
+                _state.update { it.copy(selectedTags = tags, isSaved = false) }
+            }
+            is JournalEvent.OnWentWellChanged -> {
+                if (current.isPastDate) return
+                _state.update { it.copy(wentWell = event.text, isSaved = false) }
+            }
+            is JournalEvent.OnToImproveChanged -> {
+                if (current.isPastDate) return
+                _state.update { it.copy(toImprove = event.text, isSaved = false) }
+            }
+            is JournalEvent.OnLearningChanged -> {
+                if (current.isPastDate) return
+                _state.update { it.copy(learning = event.text, isSaved = false) }
+            }
+            is JournalEvent.OnAdditionalAnswerChanged -> {
+                if (current.isPastDate) return
+                val newAnswers = current.additionalAnswers.toMutableList()
+                while (newAnswers.size <= event.index) {
+                    newAnswers.add("")
+                }
+                newAnswers[event.index] = event.text
+                _state.update { it.copy(additionalAnswers = newAnswers, isSaved = false) }
+            }
+            is JournalEvent.OnAddNewTask -> {
+                if (current.isPastDate) return
+                if (event.title.isNotBlank()) {
+                    _state.update { it.copy(newTasks = it.newTasks + event.title, isSaved = false) }
+                }
+            }
+            is JournalEvent.OnRemoveNewTask -> {
+                if (current.isPastDate) return
+                _state.update { it.copy(newTasks = it.newTasks - event.title, isSaved = false) }
+            }
+            is JournalEvent.OnSaveEntry -> {
+                if (!current.isPastDate) saveEntry()
+            }
         }
     }
 
@@ -68,13 +150,30 @@ class JournalViewModel @Inject constructor(
         val current = _state.value
         viewModelScope.launch {
             val entry = JournalEntry(
-                date = startOfToday,
-                mood = current.selectedMood,
-                content = current.tomorrowsTask,
-                promptResponses = "${current.wentWell}|${current.challenges}|${current.gratitude}"
+                date = viewingDate,
+                emotionTags = current.selectedTags,
+                content = current.additionalAnswers.joinToString("|~|"),
+                wentWell = current.wentWell,
+                toImprove = current.toImprove,
+                learning = current.learning
             )
             journalRepo.insertJournalEntry(entry)
-            _state.update { it.copy(isSaved = true) }
+
+            // Save new tasks for the next day relative to the viewed date
+            val nextDay = viewingDate + 86_400_000L
+            current.newTasks.forEach { taskTitle ->
+                taskRepo.insertTask(
+                    Task(
+                        title = taskTitle,
+                        description = "",
+                        isCompleted = false,
+                        createdAt = System.currentTimeMillis(),
+                        dueDate = nextDay
+                    )
+                )
+            }
+
+            _state.update { it.copy(isSaved = true, newTasks = emptyList()) }
         }
     }
 }

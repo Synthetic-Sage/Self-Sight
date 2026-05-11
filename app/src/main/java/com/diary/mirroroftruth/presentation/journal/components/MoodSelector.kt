@@ -1,38 +1,39 @@
 package com.diary.mirroroftruth.presentation.journal.components
 
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 
-private val MOODS = listOf("😔 Low", "😕 Meh", "😐 Okay", "🙂 Good", "😄 Great")
-
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun MoodSelector(
-    selectedMood: String,
-    onMoodSelected: (String) -> Unit,
+    selectedTags: List<String>,
+    onTagToggled: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val tags = listOf("Joyful", "Focused", "Tired", "Anxious", "Calm", "Productive", "Stressed", "Grateful", "Overwhelmed", "Frustrated", "Content")
+    
     Column(modifier = modifier) {
         Text(
-            text = "How are you feeling?",
+            text = "What's the vibe today?",
             style = MaterialTheme.typography.titleSmall,
             color = MaterialTheme.colorScheme.secondary,
             modifier = Modifier.padding(bottom = 8.dp)
         )
-        LazyRow(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        FlowRow(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier.fillMaxWidth()
         ) {
-            items(MOODS) { mood ->
+            tags.forEach { tag ->
                 FilterChip(
-                    selected = selectedMood == mood,
-                    onClick = { onMoodSelected(mood) },
+                    selected = selectedTags.contains(tag),
+                    onClick = { onTagToggled(tag) },
                     label = {
                         Text(
-                            text = mood,
+                            text = tag,
                             style = MaterialTheme.typography.bodyMedium
                         )
                     },

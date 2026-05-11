@@ -20,6 +20,10 @@ class TaskRepositoryImpl @Inject constructor(
         taskDao.updateTask(task.toEntity())
     }
 
+    override suspend fun updateTasks(tasks: List<Task>) {
+        taskDao.updateTasks(tasks.map { it.toEntity() })
+    }
+
     override suspend fun deleteTask(task: Task) {
         taskDao.deleteTask(task.toEntity())
     }

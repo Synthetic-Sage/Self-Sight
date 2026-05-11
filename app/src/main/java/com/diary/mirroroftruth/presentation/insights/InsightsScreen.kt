@@ -14,6 +14,7 @@ import com.diary.mirroroftruth.presentation.insights.components.MoodSummaryCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@Suppress("UNUSED_PARAMETER")
 fun InsightsScreen(
     state: InsightsState,
     onEvent: (InsightsEvent) -> Unit
@@ -87,7 +88,7 @@ fun InsightsScreen(
                 // Mood distribution section
                 item {
                     Text(
-                        text = "Mood Distribution",
+                        text = "Vibe Tags",
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = MaterialTheme.colorScheme.onSurface
                     )

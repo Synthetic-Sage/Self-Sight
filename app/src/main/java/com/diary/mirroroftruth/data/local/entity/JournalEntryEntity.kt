@@ -8,7 +8,9 @@ data class JournalEntryEntity(
     @PrimaryKey(autoGenerate = true)
     val id: Long = 0,
     val date: Long, // Start of day timestamp
-    val mood: String,
+    val emotionTags: List<String>,
     val content: String,
-    val promptResponses: String // JSON serialized
+    val wentWell: String,
+    val toImprove: String,
+    val learning: String
 )

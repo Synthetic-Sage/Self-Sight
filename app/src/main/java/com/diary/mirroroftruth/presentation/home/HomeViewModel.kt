@@ -24,6 +24,17 @@ class HomeViewModel @Inject constructor(
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
+    private val quotes = listOf(
+        "The only way to do great work is to love what you do.",
+        "Believe you can and you're halfway there.",
+        "Your limitation—it's only your imagination.",
+        "Push yourself, because no one else is going to do it for you.",
+        "Sometimes later becomes never. Do it now.",
+        "Great things never come from comfort zones.",
+        "Dream it. Wish it. Do it.",
+        "Success doesn’t just find you. You have to go out and get it."
+    )
+
     init {
         loadData()
     }
@@ -39,7 +50,11 @@ class HomeViewModel @Inject constructor(
             set(Calendar.MILLISECOND, 0)
         }.timeInMillis
 
-        _state.update { it.copy(currentDate = startOfToday) }
+        // Pick a quote based on the day of year
+        val dayOfYear = Calendar.getInstance().get(Calendar.DAY_OF_YEAR)
+        val quote = quotes[dayOfYear % quotes.size]
+
+        _state.update { it.copy(currentDate = startOfToday, dailyQuote = quote) }
 
         // Observe Tasks
         viewModelScope.launch {
@@ -51,7 +66,9 @@ class HomeViewModel @Inject constructor(
         // Observe Goals
         viewModelScope.launch {
             goalRepo.getAllGoals().collect { goals ->
-                _state.update { it.copy(goals = goals) }
+                val bigSteps = goals.filter { it.type == com.diary.mirroroftruth.domain.model.StepType.BIG }
+                val smallSteps = goals.filter { it.type == com.diary.mirroroftruth.domain.model.StepType.SMALL }
+                _state.update { it.copy(bigSteps = bigSteps, smallSteps = smallSteps) }
             }
         }
     }
@@ -64,6 +81,46 @@ class HomeViewModel @Inject constructor(
                     taskRepo.updateTask(updatedTask)
                 }
             }
+            is HomeEvent.OnAddTask -> {
+                if (event.title.isNotBlank()) {
+                    viewModelScope.launch {
+                        val currentCount = _state.value.tasks.size
+                        taskRepo.insertTask(
+                            Task(
+                                title = event.title,
+                                description = "",
+                                isCompleted = false,
+                                createdAt = System.currentTimeMillis(),
+                                dueDate = _state.value.currentDate,
+                                positionIndex = currentCount
+                            )
+                        )
+                    }
+                }
+            }
+            is HomeEvent.OnDeleteTask -> {
+                viewModelScope.launch {
+                    taskRepo.deleteTask(event.task)
+                }
+            }
+            is HomeEvent.OnReorderTasks -> {
+                val currentTasks = _state.value.tasks.toMutableList()
+                if (event.fromIndex < 0 || event.toIndex < 0 || event.fromIndex >= currentTasks.size || event.toIndex >= currentTasks.size) return
+                
+                val taskToMove = currentTasks.removeAt(event.fromIndex)
+                currentTasks.add(event.toIndex, taskToMove)
+                
+                // Update local state immediately for smooth UI
+                _state.update { it.copy(tasks = currentTasks) }
+                
+                // Update position indices and save to DB
+                viewModelScope.launch {
+                    val updatedTasks = currentTasks.mapIndexed { index, task ->
+                        task.copy(positionIndex = index)
+                    }
+                    taskRepo.updateTasks(updatedTasks)
+                }
+            }
             is HomeEvent.OnAddSampleData -> {
                 viewModelScope.launch {
                     goalRepo.insertGoal(
@@ -72,6 +129,18 @@ class HomeViewModel @Inject constructor(
                             description = "Read 50 books by the end of the year.",
                             progress = 12f,
                             target = 50f,
+                            type = com.diary.mirroroftruth.domain.model.StepType.BIG,
+                            createdAt = System.currentTimeMillis(),
+                            deadline = null
+                        )
+                    )
+                    goalRepo.insertGoal(
+                        Goal(
+                            title = "Drink 2L Water",
+                            description = "Stay hydrated today",
+                            progress = 0f,
+                            target = 1f,
+                            type = com.diary.mirroroftruth.domain.model.StepType.SMALL,
                             createdAt = System.currentTimeMillis(),
                             deadline = null
                         )
@@ -97,6 +166,47 @@ class HomeViewModel @Inject constructor(
                         )
                     )
                 }
+            }
+            is HomeEvent.OnAddStep -> {
+                viewModelScope.launch {
+                    goalRepo.insertGoal(
+                        Goal(
+                            title = event.title,
+                            description = event.description,
+                            progress = 0f,
+                            target = event.target,
+                            type = event.type,
+                            createdAt = System.currentTimeMillis(),
+                            deadline = null
+                        )
+                    )
+                }
+            }
+            is HomeEvent.OnStepProgress -> {
+                viewModelScope.launch {
+                    val wasCompleted = event.goal.progress >= event.goal.target
+                    val isCompleted = event.progress >= event.goal.target
+                    
+                    val updatedGoal = event.goal.copy(progress = event.progress)
+                    goalRepo.updateGoal(updatedGoal)
+
+                    // Trigger celebration if it just became completed
+                    if (!wasCompleted && isCompleted) {
+                        if (event.goal.type == com.diary.mirroroftruth.domain.model.StepType.BIG) {
+                            _state.update { it.copy(showBigStepCelebration = true) }
+                        } else {
+                            _state.update { it.copy(showSmallStepCelebration = true) }
+                        }
+                    }
+                }
+            }
+            is HomeEvent.OnDeleteStep -> {
+                viewModelScope.launch {
+                    goalRepo.deleteGoal(event.goal)
+                }
+            }
+            is HomeEvent.OnDismissCelebration -> {
+                _state.update { it.copy(showBigStepCelebration = false, showSmallStepCelebration = false) }
             }
         }
     }

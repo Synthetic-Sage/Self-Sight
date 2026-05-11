@@ -8,6 +8,8 @@ plugins {
 android {
     namespace = "com.diary.mirroroftruth"
     compileSdk = 34
+    
+    layout.buildDirectory.set(file("build2"))
 
     defaultConfig {
         applicationId = "com.diary.mirroroftruth"
@@ -18,6 +20,7 @@ android {
         vectorDrawables {
             useSupportLibrary = true
         }
+        setProperty("archivesBaseName", "MirrorOfTruth-CrashCatcher")
     }
 
     compileOptions {
@@ -67,4 +70,16 @@ dependencies {
 
     // Extended Material Icons (Timeline, MenuBook, IosShare, etc.)
     implementation("androidx.compose.material:material-icons-extended")
+
+    // Reorderable LazyColumn
+    implementation("org.burnoutcrew.composereorderable:reorderable:0.9.6")
+
+    // DataStore Preferences (for persisting settings)
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Konfetti for celebrations
+    implementation("nl.dionsegijn:konfetti-compose:2.0.4")
+    
+    // Gson for JSON backup
+    implementation("com.google.code.gson:gson:2.10.1")
 }

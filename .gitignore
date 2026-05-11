@@ -1,15 +1,40 @@
-*.iml
-.gradle
-/local.properties
-/.idea/caches
-/.idea/libraries
-/.idea/modules.xml
-/.idea/workspace.xml
-/.idea/navEditor.xml
-/.idea/assetWizardSettings.xml
-.DS_Store
-/build
-/captures
-.externalNativeBuild
-.cxx
+# Built application files
+*.apk
+*.aab
+*.ap_
+*.aab
+
+# Local configuration file (sdk path, etc)
 local.properties
+
+# Gradle files
+.gradle/
+build/
+
+# IDE files
+.idea/
+*.iml
+*.iws
+
+# Mac OS X
+.DS_Store
+
+# Native build
+.externalNativeBuild
+.cxx/
+
+# AI and local dev tools
+.agent/
+.gemini/
+.gsd/
+
+# Custom build directories
+app/build2/
+build2/
+
+# Keystore files
+*.jks
+*.keystore
+
+# Google Services (Firebase)
+google-services.json

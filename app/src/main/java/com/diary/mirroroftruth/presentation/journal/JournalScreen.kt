@@ -2,10 +2,23 @@ package com.diary.mirroroftruth.presentation.journal
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.diary.mirroroftruth.presentation.journal.components.JournalPromptField
@@ -15,28 +28,72 @@ import java.util.Date
 import java.util.Locale
 
 @OptIn(ExperimentalMaterial3Api::class)
+@Suppress("DEPRECATION")
 @Composable
 fun JournalScreen(
     state: JournalState,
-    onEvent: (JournalEvent) -> Unit
+    onEvent: (JournalEvent) -> Unit,
+    largeFontEnabled: Boolean = false,
+    journalPrompts: List<String> = listOf("What went well today?", "Things to improve", "Today's learning"),
+    showWentWell: Boolean = true,
+    showToImprove: Boolean = true,
+    showLearning: Boolean = true
 ) {
     val dateFormatter = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault())
-    val todayString = dateFormatter.format(Date(state.currentDate))
+    val todayFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
+
+    val displayDate = dateFormatter.format(Date(state.currentDate))
+    val isToday = todayFormatter.format(Date(state.currentDate)) ==
+            todayFormatter.format(Date(System.currentTimeMillis()))
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
                     Column {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = if (isToday) "Today's Reflection" else "Past Entry",
+                                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                                color = MaterialTheme.colorScheme.primary
+                            )
+                            if (state.isPastDate) {
+                                Spacer(modifier = Modifier.width(6.dp))
+                                Icon(
+                                    imageVector = Icons.Default.Lock,
+                                    contentDescription = "Read only",
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(14.dp)
+                                )
+                            }
+                        }
                         Text(
-                            text = "Today's Reflection",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                        Text(
-                            text = todayString,
+                            text = displayDate,
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+                },
+                // Date navigation arrows
+                navigationIcon = {
+                    IconButton(onClick = { onEvent(JournalEvent.NavigateToPreviousDay) }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Previous day",
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
+                },
+                actions = {
+                    IconButton(
+                        onClick = { onEvent(JournalEvent.NavigateToNextDay) },
+                        enabled = !isToday   // disable forward arrow on today
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowForward,
+                            contentDescription = "Next day",
+                            tint = if (isToday) MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                                   else MaterialTheme.colorScheme.primary
                         )
                     }
                 },
@@ -53,98 +110,204 @@ fun JournalScreen(
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
-            // Mood Selector
+            // ── Vibe Tags ─────────────────────────────────────────────────────
             item {
                 MoodSelector(
-                    selectedMood = state.selectedMood,
-                    onMoodSelected = { onEvent(JournalEvent.OnMoodSelected(it)) }
+                    selectedTags = state.selectedTags,
+                    onTagToggled = { if (!state.isPastDate) onEvent(JournalEvent.OnTagToggled(it)) }
                 )
             }
 
-            // Reflection prompts
-            item {
-                JournalPromptField(
-                    prompt = "What went well today?",
-                    value = state.wentWell,
-                    onValueChange = { onEvent(JournalEvent.OnWentWellChanged(it)) }
-                )
-            }
-
-            item {
-                JournalPromptField(
-                    prompt = "What challenged you?",
-                    value = state.challenges,
-                    onValueChange = { onEvent(JournalEvent.OnChallengesChanged(it)) }
-                )
-            }
-
-            item {
-                JournalPromptField(
-                    prompt = "What are you grateful for?",
-                    value = state.gratitude,
-                    onValueChange = { onEvent(JournalEvent.OnGratitudeChanged(it)) }
-                )
-            }
-
-            // Tomorrow's intentions
-            item {
-                HorizontalDivider(
-                    color = MaterialTheme.colorScheme.surfaceVariant,
-                    thickness = 1.dp
-                )
-            }
-
-            item {
-                Text(
-                    text = "Tomorrow's Intentions",
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-            }
-
-            item {
-                OutlinedTextField(
-                    value = state.tomorrowsTask,
-                    onValueChange = { onEvent(JournalEvent.OnTomorrowsTaskChanged(it)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    placeholder = {
+            // Past-entry banner
+            if (state.isPastDate) {
+                item {
+                    Surface(
+                        shape = RoundedCornerShape(10.dp),
+                        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
                         Text(
-                            text = "What do you want to accomplish tomorrow?",
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            text = "📖  Ink has dried — this entry is read-only.",
+                            style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp)
                         )
-                    },
-                    minLines = 2,
-                    maxLines = 4,
-                    shape = RoundedCornerShape(12.dp),
-                    colors = OutlinedTextFieldDefaults.colors(
-                        focusedBorderColor = MaterialTheme.colorScheme.secondary,
-                        unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
-                        focusedContainerColor = MaterialTheme.colorScheme.surface,
-                        unfocusedContainerColor = MaterialTheme.colorScheme.surface
-                    )
-                )
+                    }
+                }
             }
 
-            // Save button
-            item {
-                ElevatedButton(
-                    onClick = { onEvent(JournalEvent.OnSaveEntry) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(52.dp),
-                    shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                ) {
+            // Empty past-entry state
+            if (state.isPastDate &&
+                state.wentWell.isBlank() &&
+                state.toImprove.isBlank() &&
+                state.learning.isBlank() &&
+                state.selectedTags.isEmpty()
+            ) {
+                item {
                     Text(
-                        text = if (state.isSaved) "Entry Saved!" else "Save Entry",
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        text = "Nothing was written on this day. 🍂",
+                        style = MaterialTheme.typography.bodyMedium.copy(fontStyle = FontStyle.Italic),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                        modifier = Modifier.padding(vertical = 24.dp)
+                    )
+                }
+            }
+
+            // ── Reflection prompts (first 3 use existing DB fields, extras use additionalAnswers) ──
+            if (showWentWell) {
+                item {
+                    JournalPromptField(
+                        prompt = journalPrompts.getOrElse(0) { "What went well today?" },
+                        value = state.wentWell,
+                        onValueChange = { onEvent(JournalEvent.OnWentWellChanged(it)) },
+                        readOnly = state.isPastDate,
+                        largeFontEnabled = largeFontEnabled
+                    )
+                }
+            }
+
+            if (showToImprove) {
+                item {
+                    JournalPromptField(
+                        prompt = journalPrompts.getOrElse(1) { "Things to improve" },
+                        value = state.toImprove,
+                        onValueChange = { onEvent(JournalEvent.OnToImproveChanged(it)) },
+                        readOnly = state.isPastDate,
+                        largeFontEnabled = largeFontEnabled
+                    )
+                }
+            }
+
+            if (showLearning) {
+                item {
+                    JournalPromptField(
+                        prompt = journalPrompts.getOrElse(2) { "Today's learning" },
+                        value = state.learning,
+                        onValueChange = { onEvent(JournalEvent.OnLearningChanged(it)) },
+                        readOnly = state.isPastDate,
+                        largeFontEnabled = largeFontEnabled
+                    )
+                }
+            }
+
+            // Extra custom prompts (index 3+) stored in state.additionalAnswers
+            val extraPrompts = journalPrompts.drop(3)
+            extraPrompts.forEachIndexed { extraIndex, prompt ->
+                item {
+                    JournalPromptField(
+                        prompt = prompt,
+                        value = state.additionalAnswers.getOrElse(extraIndex) { "" },
+                        onValueChange = { onEvent(JournalEvent.OnAdditionalAnswerChanged(extraIndex, it)) },
+                        readOnly = state.isPastDate,
+                        largeFontEnabled = largeFontEnabled
+                    )
+                }
+            }
+
+            // ── Tomorrow's Tasks (only shown for today's entry) ───────────────
+            if (!state.isPastDate) {
+                item {
+                    HorizontalDivider(
+                        color = MaterialTheme.colorScheme.surfaceVariant,
+                        thickness = 1.dp
                     )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                item {
+                    Text(
+                        text = "Tomorrow's Tasks",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                }
+
+                items(state.newTasks) { taskTitle ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = taskTitle,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f)
+                        )
+                        IconButton(onClick = { onEvent(JournalEvent.OnRemoveNewTask(taskTitle)) }) {
+                            Icon(
+                                imageVector = Icons.Default.Clear,
+                                contentDescription = "Remove task",
+                                tint = MaterialTheme.colorScheme.error
+                            )
+                        }
+                    }
+                }
+
+                item {
+                    var newTaskTitle by remember { mutableStateOf("") }
+                    OutlinedTextField(
+                        value = newTaskTitle,
+                        onValueChange = { newTaskTitle = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = {
+                            Text(
+                                text = "Add a task for tomorrow...",
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+                            )
+                        },
+                        singleLine = true,
+                        shape = RoundedCornerShape(12.dp),
+                        trailingIcon = {
+                            IconButton(onClick = {
+                                if (newTaskTitle.isNotBlank()) {
+                                    onEvent(JournalEvent.OnAddNewTask(newTaskTitle))
+                                    newTaskTitle = ""
+                                }
+                            }) {
+                                Icon(
+                                    imageVector = Icons.Default.Add,
+                                    contentDescription = "Add task",
+                                    tint = MaterialTheme.colorScheme.primary
+                                )
+                            }
+                        },
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = MaterialTheme.colorScheme.secondary,
+                            unfocusedBorderColor = MaterialTheme.colorScheme.surfaceVariant,
+                            focusedContainerColor = MaterialTheme.colorScheme.surface,
+                            unfocusedContainerColor = MaterialTheme.colorScheme.surface
+                        )
+                    )
+                }
+
+                // ── Save button ───────────────────────────────────────────────
+                item {
+                    ElevatedButton(
+                        onClick = { onEvent(JournalEvent.OnSaveEntry) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(52.dp),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.elevatedButtonColors(
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        )
+                    ) {
+                        Text(
+                            text = if (state.isSaved) "Entry Saved ✓" else "Save Entry",
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold)
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(32.dp))
+                }
+            } else {
+                // Bottom breathing room for past entries
+                item { Spacer(modifier = Modifier.height(32.dp)) }
             }
         }
     }

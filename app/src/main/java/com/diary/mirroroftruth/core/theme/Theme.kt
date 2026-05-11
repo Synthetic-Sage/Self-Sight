@@ -4,19 +4,23 @@ import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val DarkColorScheme = darkColorScheme(
-    primary = NeonPurple,
-    secondary = NeonBlue,
-    background = DeepCharcoal,
-    surface = SurfaceDark,
+private val DiaryColorScheme = lightColorScheme(
+    primary = AccentRust,
+    secondary = AccentTeal,
+    background = ParchmentBase,
+    surface = ParchmentDark,
     onPrimary = Color.White,
     onSecondary = Color.White,
-    onBackground = TextPrimary,
-    onSurface = TextPrimary
+    onBackground = InkBlack,
+    onSurface = InkBlack,
+    error = ErrorRed,
+    onError = Color.White,
+    surfaceVariant = ParchmentBase,
+    onSurfaceVariant = InkFaded
 )
 
 @Composable
@@ -24,7 +28,7 @@ fun MirrorOfTruthTheme(
     content: @Composable () -> Unit
 ) {
     MaterialTheme(
-        colorScheme = DarkColorScheme,
+        colorScheme = DiaryColorScheme,
         typography = Typography,
         content = content
     )

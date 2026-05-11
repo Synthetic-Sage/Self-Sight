@@ -62,11 +62,11 @@ class InsightsViewModel @Inject constructor(
                     entriesByDay[day] = true
                 }
 
-                // Mood counts
+                // Tag frequency: flatten all emotionTags and count each
                 val moodCounts = entries
-                    .filter { it.mood.isNotEmpty() }
-                    .groupBy { it.mood }
-                    .mapValues { it.value.size }
+                    .flatMap { it.emotionTags }
+                    .groupingBy { it }
+                    .eachCount()
 
                 // Streak: count backwards from today
                 val todayDay = calendar.get(Calendar.DAY_OF_MONTH)

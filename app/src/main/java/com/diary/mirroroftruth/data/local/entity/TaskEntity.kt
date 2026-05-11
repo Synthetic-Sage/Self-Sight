@@ -11,5 +11,7 @@ data class TaskEntity(
     val description: String?,
     val isCompleted: Boolean,
     val createdAt: Long,
-    val dueDate: Long?
+    val dueDate: Long?,
+    val colorTag: String? = null,
+    val positionIndex: Int = 0
 )

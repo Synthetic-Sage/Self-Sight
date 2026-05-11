@@ -17,10 +17,13 @@ interface TaskDao {
     @Update
     suspend fun updateTask(task: TaskEntity)
 
+    @Update
+    suspend fun updateTasks(tasks: List<TaskEntity>)
+
     @Delete
     suspend fun deleteTask(task: TaskEntity)
 
-    @Query("SELECT * FROM tasks WHERE dueDate = :date")
+    @Query("SELECT * FROM tasks WHERE dueDate = :date ORDER BY positionIndex ASC, createdAt ASC")
     fun getTasksForDate(date: Long): Flow<List<TaskEntity>>
 
     @Query("SELECT * FROM tasks ORDER BY createdAt DESC")
