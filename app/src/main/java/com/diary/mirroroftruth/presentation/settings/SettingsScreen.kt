@@ -222,6 +222,39 @@ fun SettingsScreen(
                     onCheckedChange = { onEvent(SettingsEvent.OnToggleLargeFont) }
                 )
             }
+            item {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Text(
+                        text = "Font Style",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf("Modern", "Classic", "Elegant", "Clean").forEach { font ->
+                            val isSelected = state.selectedFont == font
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { onEvent(SettingsEvent.OnFontSelected(font)) },
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            ) {
+                                Text(
+                                    text = font,
+                                    modifier = Modifier.padding(vertical = 8.dp),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+                }
+            }
             item { SectionDivider() }
 
             item {

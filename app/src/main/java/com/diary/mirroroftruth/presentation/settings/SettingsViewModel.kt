@@ -47,6 +47,7 @@ data class SettingsState(
     val showWentWellPrompt: Boolean = true,
     val showToImprovePrompt: Boolean = true,
     val showLearningPrompt: Boolean = true,
+    val selectedFont: String = "Modern",
     // Custom journal prompts
     val journalPrompts: List<String> = listOf("What went well today?", "Things to improve", "Today's learning"),
     val editingPromptIndex: Int? = null   // null = not editing
@@ -67,6 +68,7 @@ sealed interface SettingsEvent {
     object OnToggleWentWell : SettingsEvent
     object OnToggleToImprove : SettingsEvent
     object OnToggleLearning : SettingsEvent
+    data class OnFontSelected(val font: String) : SettingsEvent
     // Custom prompts
     object OnAddPrompt : SettingsEvent
     data class OnEditPrompt(val index: Int, val newText: String) : SettingsEvent
@@ -90,6 +92,7 @@ class SettingsViewModel @Inject constructor(
         val KEY_WENT_WELL    = booleanPreferencesKey("show_went_well")
         val KEY_TO_IMPROVE   = booleanPreferencesKey("show_to_improve")
         val KEY_LEARNING     = booleanPreferencesKey("show_learning")
+        val KEY_FONT         = stringPreferencesKey("selected_font")
         val KEY_PROMPTS      = stringPreferencesKey("journal_prompts")  // pipe-separated
         val DEFAULT_PROMPTS  = listOf("What went well today?", "Things to improve", "Today's learning")
     }
@@ -104,6 +107,7 @@ class SettingsViewModel @Inject constructor(
                     showWentWellPrompt  = prefs[KEY_WENT_WELL]   ?: true,
                     showToImprovePrompt = prefs[KEY_TO_IMPROVE]  ?: true,
                     showLearningPrompt  = prefs[KEY_LEARNING]    ?: true,
+                    selectedFont        = prefs[KEY_FONT]        ?: "Modern",
                     journalPrompts      = savedPrompts
                 )
             }
@@ -135,6 +139,12 @@ class SettingsViewModel @Inject constructor(
             is SettingsEvent.OnToggleWentWell     -> togglePref(KEY_WENT_WELL,   _state.value.showWentWellPrompt) { v -> _state.update { it.copy(showWentWellPrompt = v) } }
             is SettingsEvent.OnToggleToImprove    -> togglePref(KEY_TO_IMPROVE,  _state.value.showToImprovePrompt) { v -> _state.update { it.copy(showToImprovePrompt = v) } }
             is SettingsEvent.OnToggleLearning     -> togglePref(KEY_LEARNING,    _state.value.showLearningPrompt) { v -> _state.update { it.copy(showLearningPrompt = v) } }
+            is SettingsEvent.OnFontSelected       -> {
+                _state.update { it.copy(selectedFont = event.font) }
+                viewModelScope.launch {
+                    context.settingsDataStore.edit { it[KEY_FONT] = event.font }
+                }
+            }
             is SettingsEvent.OnAddPrompt          -> savePrompts(_state.value.journalPrompts + "New question")
             is SettingsEvent.OnEditPrompt         -> {
                 val updated = _state.value.journalPrompts.toMutableList().also { it[event.index] = event.newText }

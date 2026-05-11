@@ -26,10 +26,20 @@ fun JournalPromptField(
     onValueChange: (String) -> Unit,
     modifier: Modifier = Modifier,
     readOnly: Boolean = false,
-    largeFontEnabled: Boolean = false
+    largeFontEnabled: Boolean = false,
+    selectedFont: String = "Modern"
 ) {
+    val fontFamily = when (selectedFont) {
+        "Classic" -> androidx.compose.ui.text.font.FontFamily.Serif
+        "Elegant" -> androidx.compose.ui.text.font.FontFamily.Cursive
+        "Clean" -> androidx.compose.ui.text.font.FontFamily.Monospace
+        else -> androidx.compose.ui.text.font.FontFamily.Default
+    }
     val baseStyle = if (largeFontEnabled) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyLarge
-    val textStyle = baseStyle.copy(color = MaterialTheme.colorScheme.onBackground)
+    val textStyle = baseStyle.copy(
+        color = MaterialTheme.colorScheme.onBackground,
+        fontFamily = fontFamily
+    )
     val density = LocalDensity.current
     val lineHeightPx = with(density) { textStyle.lineHeight.toPx() }
     val paddingTop = 4.dp

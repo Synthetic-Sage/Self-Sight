@@ -109,6 +109,10 @@ class JournalViewModel @Inject constructor(
         when (event) {
             is JournalEvent.NavigateToPreviousDay -> goToPreviousDay()
             is JournalEvent.NavigateToNextDay -> goToNextDay()
+            is JournalEvent.OnDateSelected -> {
+                viewingDate = event.date
+                switchToDate(viewingDate)
+            }
 
             is JournalEvent.OnTagToggled -> {
                 if (current.isPastDate) return   // read-only for past

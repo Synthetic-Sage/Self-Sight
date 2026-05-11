@@ -5,14 +5,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Image
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,7 +42,8 @@ fun JournalScreen(
     journalPrompts: List<String> = listOf("What went well today?", "Things to improve", "Today's learning"),
     showWentWell: Boolean = true,
     showToImprove: Boolean = true,
-    showLearning: Boolean = true
+    showLearning: Boolean = true,
+    selectedFont: String = "Modern"
 ) {
     val dateFormatter = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault())
     val todayFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
@@ -59,6 +53,35 @@ fun JournalScreen(
             todayFormatter.format(Date(System.currentTimeMillis()))
 
     val context = LocalContext.current
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = state.currentDate,
+        selectableDates = object : SelectableDates {
+            override fun isSelectableDate(utcTimeMillis: Long): Boolean {
+                return utcTimeMillis <= System.currentTimeMillis()
+            }
+        }
+    )
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        onEvent(JournalEvent.OnDateSelected(it))
+                    }
+                    showDatePicker = false
+                }) { Text("Jump") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->
@@ -70,7 +93,11 @@ fun JournalScreen(
         topBar = {
             TopAppBar(
                 title = {
-                    Column {
+                    Column(
+                        modifier = Modifier
+                            .clickable { showDatePicker = true }
+                            .padding(vertical = 4.dp)
+                    ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Text(
                                 text = if (isToday) "Today's Reflection" else "Past Entry",
@@ -87,11 +114,19 @@ fun JournalScreen(
                                 )
                             }
                         }
-                        Text(
-                            text = displayDate,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = displayDate,
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                            Icon(
+                                imageVector = androidx.compose.material.icons.filled.ArrowDropDown,
+                                contentDescription = "Select Date",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
                     }
                 },
                 // Date navigation arrows
@@ -153,7 +188,9 @@ fun JournalScreen(
                                         val contentValues = android.content.ContentValues().apply {
                                             put(android.provider.MediaStore.MediaColumns.DISPLAY_NAME, "SelfSight_Memory_${System.currentTimeMillis()}.jpg")
                                             put(android.provider.MediaStore.MediaColumns.MIME_TYPE, "image/jpeg")
-                                            put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/SelfSight")
+                                            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                                                put(android.provider.MediaStore.MediaColumns.RELATIVE_PATH, android.os.Environment.DIRECTORY_PICTURES + "/SelfSight")
+                                            }
                                         }
                                         val destUri = resolver.insert(android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI, contentValues)
                                         destUri?.let { dest ->
@@ -250,7 +287,8 @@ fun JournalScreen(
                         value = state.wentWell,
                         onValueChange = { onEvent(JournalEvent.OnWentWellChanged(it)) },
                         readOnly = state.isPastDate,
-                        largeFontEnabled = largeFontEnabled
+                        largeFontEnabled = largeFontEnabled,
+                        selectedFont = selectedFont
                     )
                 }
             }
@@ -262,7 +300,8 @@ fun JournalScreen(
                         value = state.toImprove,
                         onValueChange = { onEvent(JournalEvent.OnToImproveChanged(it)) },
                         readOnly = state.isPastDate,
-                        largeFontEnabled = largeFontEnabled
+                        largeFontEnabled = largeFontEnabled,
+                        selectedFont = selectedFont
                     )
                 }
             }
@@ -274,7 +313,8 @@ fun JournalScreen(
                         value = state.learning,
                         onValueChange = { onEvent(JournalEvent.OnLearningChanged(it)) },
                         readOnly = state.isPastDate,
-                        largeFontEnabled = largeFontEnabled
+                        largeFontEnabled = largeFontEnabled,
+                        selectedFont = selectedFont
                     )
                 }
             }
@@ -288,7 +328,8 @@ fun JournalScreen(
                         value = state.additionalAnswers.getOrElse(extraIndex) { "" },
                         onValueChange = { onEvent(JournalEvent.OnAdditionalAnswerChanged(extraIndex, it)) },
                         readOnly = state.isPastDate,
-                        largeFontEnabled = largeFontEnabled
+                        largeFontEnabled = largeFontEnabled,
+                        selectedFont = selectedFont
                     )
                 }
             }

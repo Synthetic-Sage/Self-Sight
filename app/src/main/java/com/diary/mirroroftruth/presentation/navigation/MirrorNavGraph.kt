@@ -60,6 +60,7 @@ fun MirrorNavGraph(
                 state = state,
                 onEvent = viewModel::onEvent,
                 largeFontEnabled = settingsState.largeFontEnabled,
+                selectedFont = settingsState.selectedFont,
                 journalPrompts = settingsState.journalPrompts,
                 showWentWell = settingsState.showWentWellPrompt,
                 showToImprove = settingsState.showToImprovePrompt,
