@@ -423,10 +423,8 @@ fun SettingsScreen(
                     label = "Send Feedback",
                     sublabel = "Report a bug or suggest a feature",
                     onClick = {
-                        val intent = Intent(Intent.ACTION_SENDTO).apply {
-                            data = Uri.parse("mailto:")
-                            putExtra(Intent.EXTRA_EMAIL, arrayOf("developer@example.com"))
-                            putExtra(Intent.EXTRA_SUBJECT, "Self Sight Feedback")
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            data = Uri.parse("https://github.com/Synthetic-Sage/Mirror-of-Truth/issues")
                         }
                         context.startActivity(intent)
                     }
