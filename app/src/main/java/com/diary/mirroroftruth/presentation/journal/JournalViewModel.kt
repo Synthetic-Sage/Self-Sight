@@ -169,8 +169,8 @@ class JournalViewModel @Inject constructor(
                         }
                         
                         _state.update { it.copy(imagePath = file.absolutePath, isSaved = false) }
-                    } catch (e: Exception) {
-                        e.printStackTrace()
+                    } catch (_: Exception) {
+                        // Silently ignore — image save failed (storage permission or I/O error)
                     }
                 }
             }

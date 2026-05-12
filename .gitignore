@@ -38,3 +38,11 @@ build2/
 
 # Google Services (Firebase)
 google-services.json
+
+# GSD agent system files (AI dev tools — not part of the app)
+GSD-STYLE.md
+PROJECT_RULES.md
+model_capabilities.yaml
+adapters/
+docs/
+scripts/

@@ -202,8 +202,8 @@ fun JournalScreen(
                                             }
                                             android.widget.Toast.makeText(context, "Saved to Pictures/SelfSight", android.widget.Toast.LENGTH_SHORT).show()
                                         }
-                                    } catch (e: Exception) {
-                                        e.printStackTrace()
+                                    } catch (_: Exception) {
+                                        android.widget.Toast.makeText(context, "Could not save photo", android.widget.Toast.LENGTH_SHORT).show()
                                     }
                                 },
                                 modifier = Modifier.size(36.dp).background(Color.Black.copy(alpha = 0.5f), androidx.compose.foundation.shape.CircleShape)
