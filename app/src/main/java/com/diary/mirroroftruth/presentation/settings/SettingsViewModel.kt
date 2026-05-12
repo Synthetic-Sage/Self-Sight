@@ -99,17 +99,18 @@ class SettingsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            val prefs = context.settingsDataStore.data.first()
-            val savedPrompts = prefs[KEY_PROMPTS]?.split("|")?.filter { it.isNotBlank() } ?: DEFAULT_PROMPTS
-            _state.update {
-                it.copy(
-                    largeFontEnabled    = prefs[KEY_LARGE_FONT]  ?: false,
-                    showWentWellPrompt  = prefs[KEY_WENT_WELL]   ?: true,
-                    showToImprovePrompt = prefs[KEY_TO_IMPROVE]  ?: true,
-                    showLearningPrompt  = prefs[KEY_LEARNING]    ?: true,
-                    selectedFont        = prefs[KEY_FONT]        ?: "Modern",
-                    journalPrompts      = savedPrompts
-                )
+            context.settingsDataStore.data.collect { prefs ->
+                val savedPrompts = prefs[KEY_PROMPTS]?.split("|")?.filter { it.isNotBlank() } ?: DEFAULT_PROMPTS
+                _state.update {
+                    it.copy(
+                        largeFontEnabled    = prefs[KEY_LARGE_FONT]  ?: false,
+                        showWentWellPrompt  = prefs[KEY_WENT_WELL]   ?: true,
+                        showToImprovePrompt = prefs[KEY_TO_IMPROVE]  ?: true,
+                        showLearningPrompt  = prefs[KEY_LEARNING]    ?: true,
+                        selectedFont        = prefs[KEY_FONT]        ?: "Modern",
+                        journalPrompts      = savedPrompts
+                    )
+                }
             }
         }
     }

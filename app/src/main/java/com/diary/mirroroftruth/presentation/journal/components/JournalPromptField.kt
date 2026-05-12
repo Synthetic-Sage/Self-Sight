@@ -10,6 +10,8 @@ import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.diary.mirroroftruth.core.theme.NotebookLine
 
@@ -29,16 +31,18 @@ fun JournalPromptField(
     largeFontEnabled: Boolean = false,
     selectedFont: String = "Modern"
 ) {
-    val fontFamily = when (selectedFont) {
-        "Classic" -> androidx.compose.ui.text.font.FontFamily.Serif
-        "Elegant" -> androidx.compose.ui.text.font.FontFamily.Cursive
-        "Clean" -> androidx.compose.ui.text.font.FontFamily.Monospace
-        else -> androidx.compose.ui.text.font.FontFamily.Default
+    val (fontFamily, fontStyle) = when (selectedFont) {
+        "Classic"  -> FontFamily.Serif    to FontStyle.Normal   // Same as app default – a classic diary look
+        "Elegant"  -> FontFamily.Serif    to FontStyle.Italic   // Italic serif – flowing, personal
+        "Clean"    -> FontFamily.SansSerif to FontStyle.Normal  // Clean, minimal sans-serif
+        "Mono"     -> FontFamily.Monospace to FontStyle.Normal  // Typewriter style
+        else       -> FontFamily.SansSerif to FontStyle.Normal  // "Modern" default
     }
     val baseStyle = if (largeFontEnabled) MaterialTheme.typography.titleLarge else MaterialTheme.typography.bodyLarge
     val textStyle = baseStyle.copy(
-        color = MaterialTheme.colorScheme.onBackground,
-        fontFamily = fontFamily
+        color      = MaterialTheme.colorScheme.onBackground,
+        fontFamily = fontFamily,
+        fontStyle  = fontStyle
     )
     val density = LocalDensity.current
     val lineHeightPx = with(density) { textStyle.lineHeight.toPx() }

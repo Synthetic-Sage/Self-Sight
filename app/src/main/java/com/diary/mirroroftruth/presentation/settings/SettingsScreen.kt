@@ -225,31 +225,89 @@ fun SettingsScreen(
             item {
                 Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
                     Text(
-                        text = "Font Style",
+                        text = "Font Style for Journal",
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Text(
+                        text = "Changes the writing font in your journal entries",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    // Row 1: Modern + Classic
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        listOf("Modern", "Classic", "Elegant", "Clean").forEach { font ->
-                            val isSelected = state.selectedFont == font
+                        listOf(
+                            "Modern" to androidx.compose.ui.text.font.FontFamily.SansSerif,
+                            "Classic" to androidx.compose.ui.text.font.FontFamily.Serif
+                        ).forEach { (label, family) ->
+                            val isSelected = state.selectedFont == label
                             Surface(
                                 modifier = Modifier
                                     .weight(1f)
-                                    .clickable { onEvent(SettingsEvent.OnFontSelected(font)) },
+                                    .clickable { onEvent(SettingsEvent.OnFontSelected(label)) },
                                 shape = RoundedCornerShape(8.dp),
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
                                 contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
                             ) {
-                                Text(
-                                    text = font,
-                                    modifier = Modifier.padding(vertical = 8.dp),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                )
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                    Text(
+                                        text = "Aa",
+                                        style = MaterialTheme.typography.bodyMedium.copy(fontFamily = family),
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Spacer(modifier = Modifier.height(8.dp))
+                    // Row 2: Elegant + Mono
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        listOf(
+                            "Elegant" to androidx.compose.ui.text.font.FontFamily.Serif,
+                            "Mono" to androidx.compose.ui.text.font.FontFamily.Monospace
+                        ).forEach { (label, family) ->
+                            val isSelected = state.selectedFont == label
+                            Surface(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .clickable { onEvent(SettingsEvent.OnFontSelected(label)) },
+                                shape = RoundedCornerShape(8.dp),
+                                color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceVariant,
+                                contentColor = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant
+                            ) {
+                                Column(
+                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 8.dp),
+                                    horizontalAlignment = androidx.compose.ui.Alignment.CenterHorizontally
+                                ) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                    Text(
+                                        text = if (label == "Elegant") "Aa" else "Aa",
+                                        style = MaterialTheme.typography.bodyMedium.copy(
+                                            fontFamily = family,
+                                            fontStyle = if (label == "Elegant") FontStyle.Italic else FontStyle.Normal
+                                        ),
+                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                                    )
+                                }
                             }
                         }
                     }
@@ -466,7 +524,11 @@ fun SettingsScreen(
             // ── About ─────────────────────────────────────────────────────────
             item { SectionHeader("About") }
             item {
-                InfoRow(icon = null, label = "Self Sight", value = "v1.0-beta")
+                InfoRow(icon = null, label = "Self Sight", value = "v3.1.2")
+            }
+            item { SectionDivider() }
+            item {
+                InfoRow(icon = null, label = "Developer", value = "Synthetic-Sage")
             }
             item { SectionDivider() }
             item {

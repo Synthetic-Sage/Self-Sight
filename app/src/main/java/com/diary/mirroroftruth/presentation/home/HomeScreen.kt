@@ -17,8 +17,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.diary.mirroroftruth.presentation.home.components.GoalCard
 import com.diary.mirroroftruth.presentation.home.components.TaskItem
 import com.diary.mirroroftruth.presentation.home.components.AddStepBottomSheet
@@ -82,8 +84,13 @@ fun HomeScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Mirror of Truth",
-                            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold),
+                            text = "Self Sight",
+                            style = MaterialTheme.typography.titleLarge.copy(
+                                fontWeight = FontWeight.Bold,
+                                fontStyle = FontStyle.Italic,
+                                fontSize = 26.sp,
+                                letterSpacing = 1.5.sp
+                            ),
                             color = MaterialTheme.colorScheme.primary
                         )
                         Text(

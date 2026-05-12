@@ -22,6 +22,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import coil.compose.AsyncImage
@@ -121,7 +122,7 @@ fun JournalScreen(
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                             Icon(
-                                imageVector = androidx.compose.material.icons.filled.ArrowDropDown,
+                                imageVector = Icons.Default.ArrowDropDown,
                                 contentDescription = "Select Date",
                                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(18.dp)
