@@ -36,6 +36,18 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import org.burnoutcrew.reorderable.*
 
+/**
+ * The main entry point of the app (the Dashboard).
+ * It manages the daily overview, including:
+ * - Fortune Cookie: A daily rotating quote from an internal dataset.
+ * - Big Steps: Long-term goals/projects with nested Small Steps.
+ * - Daily Tasks: A reorderable, priority-based list of immediate actions.
+ *
+ * Key Features:
+ * - Celebrations: Triggers confetti/snackbars when milestones are reached.
+ * - Task Reordering: Users can drag tasks to prioritize their day.
+ * - Goal Visualization: Progress indicators based on Small Step completion.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(

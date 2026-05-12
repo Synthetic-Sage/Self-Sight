@@ -15,12 +15,23 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import com.diary.mirroroftruth.domain.model.Goal
 
+/**
+ * A card representing a "Big Step" (long-term goal) on the dashboard.
+ * It visualizes the overall progress of the goal based on completed "Small Steps".
+ *
+ * @param goal The domain model containing title, description, and progress metrics.
+ * @param onProgressChange Callback triggered when a small step is toggled within this goal.
+ */
 @Composable
 fun GoalCard(
     goal: Goal,
     onProgressChange: (Float) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    /**
+     * Normalize the progress between 0.0 and 1.0 for the LinearProgressIndicator.
+     * If target is 0 (invalid), default to 0% progress.
+     */
     val progressPercent = if (goal.target > 0) goal.progress / goal.target else 0f
     
     Column(

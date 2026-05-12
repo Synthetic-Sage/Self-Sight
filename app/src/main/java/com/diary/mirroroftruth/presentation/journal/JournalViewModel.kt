@@ -20,6 +20,16 @@ import java.io.FileOutputStream
 import java.util.Calendar
 import javax.inject.Inject
 
+/**
+ * ViewModel for the Journal Screen.
+ * Responsible for managing the lifecycle and state of daily reflections.
+ *
+ * It manages:
+ * - Date Navigation: Logic for jumping between days and respecting the 'today' boundary.
+ * - Data Synchronization: Saving/Loading entries from the Room Database.
+ * - Media Handling: Copying images to internal storage to ensure privacy and persistence.
+ * - Task Integration: Fetching completed tasks to show user achievements for that date.
+ */
 @HiltViewModel
 class JournalViewModel @Inject constructor(
     private val journalRepo: JournalEntryRepository,
@@ -30,7 +40,11 @@ class JournalViewModel @Inject constructor(
     private val _state = MutableStateFlow(JournalState())
     val state: StateFlow<JournalState> = _state.asStateFlow()
 
-    /** Start-of-today in millis (recomputed each time so midnight roll-over is safe) */
+/**
+ * Start-of-today timestamp in milliseconds (midnight).
+ * This acts as the unique identifier for a day's journal entry.
+ * It is recomputed via a getter to handle cases where the app stays open past midnight.
+ */
     private val startOfToday: Long
         get() = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 0); set(Calendar.MINUTE, 0)

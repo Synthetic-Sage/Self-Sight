@@ -7,6 +7,13 @@ import com.diary.mirroroftruth.domain.model.Goal
 import com.diary.mirroroftruth.domain.model.JournalEntry
 import com.diary.mirroroftruth.domain.model.Task
 
+/**
+ * Mappers to convert between Room Database Entities and Domain Models.
+ * 
+ * This separation ensures that the UI/Domain logic doesn't depend on 
+ * database-specific annotations or structures, maintaining a Clean Architecture.
+ */
+
 // Task Mappers
 fun TaskEntity.toDomain(): Task {
     return Task(

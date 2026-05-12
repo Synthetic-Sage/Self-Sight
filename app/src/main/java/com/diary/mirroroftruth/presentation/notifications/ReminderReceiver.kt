@@ -11,11 +11,17 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import com.diary.mirroroftruth.R
 
+/**
+ * BroadcastReceiver responsible for triggering the daily journal reminder notification.
+ * It is triggered by the AlarmManager at a time specified by the user in Settings.
+ */
 class ReminderReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
+        // 1. Initialize NotificationManager
         val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "daily_reminder_channel"
 
+        // 2. Create Notification Channel (required for Android 8.0+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
                 channelId,
@@ -27,7 +33,9 @@ class ReminderReceiver : BroadcastReceiver() {
             notificationManager.createNotificationChannel(channel)
         }
 
-        // Intent to open the Journal screen via deep link
+        // 3. Setup Deep Link Intent
+        // This allows the notification to open the Journal screen directly using the "mirror://journal" URI scheme.
+        // Deep links are handled in the MirrorNavGraph and AndroidManifest.
         val deepLinkIntent = Intent(
             Intent.ACTION_VIEW,
             Uri.parse("mirror://journal")
@@ -42,6 +50,7 @@ class ReminderReceiver : BroadcastReceiver() {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
+        // 4. Build and Display the Notification
         val notification = NotificationCompat.Builder(context, channelId)
             // Use a default icon since we don't know the exact drawable name, android.R.drawable.ic_dialog_info works
             .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -54,7 +63,9 @@ class ReminderReceiver : BroadcastReceiver() {
 
         notificationManager.notify(1001, notification)
 
-        // Reschedule for next day automatically
+        // 5. Automatic Rescheduling
+        // Since AlarmManager alarms can be cleared on reboot or system updates, we reschedule
+        // the alarm for the next day here. This ensures the chain of reminders remains persistent.
         val prefs = context.getSharedPreferences(ReminderManager.PREFS_NAME, Context.MODE_PRIVATE)
         if (prefs.getBoolean(ReminderManager.KEY_REMINDER_ENABLED, false)) {
             val hour = prefs.getInt(ReminderManager.KEY_REMINDER_HOUR, 20)

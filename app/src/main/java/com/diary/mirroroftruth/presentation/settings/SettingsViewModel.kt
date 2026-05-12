@@ -76,6 +76,16 @@ sealed interface SettingsEvent {
     data class OnStartEditingPrompt(val index: Int?) : SettingsEvent
 }
 
+/**
+ * ViewModel for the Settings Screen.
+ * Handles app-wide configuration, data portability, and customization.
+ *
+ * Core Responsibilities:
+ * - App Configuration: Large font, font style, and prompt visibility (persisted via DataStore).
+ * - Custom Prompts: Logic for managing a user-defined list of reflection questions.
+ * - Data Portability: Encrypted JSON Export/Import via AES-256 for secure backups.
+ * - Data Management: Global reset functionality to wipe local database state.
+ */
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val journalRepo: JournalEntryRepository,

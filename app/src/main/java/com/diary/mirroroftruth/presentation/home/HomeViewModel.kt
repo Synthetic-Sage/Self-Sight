@@ -15,6 +15,16 @@ import kotlinx.coroutines.launch
 import java.util.Calendar
 import javax.inject.Inject
 
+/**
+ * ViewModel for the Home Screen (Dashboard).
+ * Coordinates the display of daily tasks, long-term goals, and motivational quotes.
+ *
+ * Core Responsibilities:
+ * - Task Management: Handling creation, completion, deletion, and reordering of daily tasks.
+ * - Goal Tracking: Managing "Big Steps" and calculating progress based on "Small Steps".
+ * - Celebrations: Logic for triggering full-screen or snackbar celebrations upon milestone completion.
+ * - Quote Engine: Selects a "Fortune Cookie" quote based on the day of the year.
+ */
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val taskRepo: TaskRepository,

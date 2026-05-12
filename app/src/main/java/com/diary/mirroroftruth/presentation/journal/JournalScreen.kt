@@ -33,6 +33,16 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+/**
+ * The Journal screen allows users to write their daily reflections, select a "vibe" (mood),
+ * and attach a photo memory. It supports viewing past entries and editing the current day's entry.
+ *
+ * Key Features:
+ * - Date Picker: Click the date header to jump to any past date instantly.
+ * - Photo Memory: Add/Remove a single photo for each entry (stored locally in app files).
+ * - Dynamic Typography: Respects user preferences for font size and style.
+ * - Vibe Tracker: A set of emojis to track the daily mood pattern.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Suppress("DEPRECATION")
 @Composable
@@ -49,6 +59,7 @@ fun JournalScreen(
     val dateFormatter = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault())
     val todayFormatter = SimpleDateFormat("yyyyMMdd", Locale.getDefault())
 
+    // Logic to determine if we are viewing 'today' — used to disable editing for past entries
     val displayDate = dateFormatter.format(Date(state.currentDate))
     val isToday = todayFormatter.format(Date(state.currentDate)) ==
             todayFormatter.format(Date(System.currentTimeMillis()))
@@ -64,6 +75,7 @@ fun JournalScreen(
         }
     )
 
+    // UI for jumping to a specific date via the TopBar click listener
     if (showDatePicker) {
         DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -83,6 +95,7 @@ fun JournalScreen(
         }
     }
 
+    // Photo Picker launcher: Uses the modern Android PhotoPicker for secure media selection.
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickVisualMedia(),
         onResult = { uri ->

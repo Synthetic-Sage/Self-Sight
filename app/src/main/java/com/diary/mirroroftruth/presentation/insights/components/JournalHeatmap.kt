@@ -26,9 +26,12 @@ import java.util.Calendar
 import java.util.Locale
 
 /**
- * A Bezier "Vibe" curve that shows journal consistency throughout the month.
- * Dots = days with entries. Curve smoothly connects them.
- * Also shows the raw calendar heatmap below for reference.
+ * A visual summary of journaling consistency throughout the current month.
+ * It combines two modern visualizations:
+ * 1. Bezier "Vibe" Curve: A smooth path connecting dots that represent days with saved entries.
+ * 2. Calendar Heatmap: A traditional grid view where cells are highlighted based on activity.
+ *
+ * @param entriesByDay A map where the key is the day of the month and the value is true if an entry exists.
  */
 @Composable
 fun JournalHeatmap(
@@ -42,6 +45,7 @@ fun JournalHeatmap(
     val todayDay = today.get(Calendar.DAY_OF_MONTH)
 
     // Determine starting weekday offset (Mon=0 .. Sun=6) for day 1
+    // This allows the calendar grid to align correctly with the days of the week.
     val firstDayCalendar = Calendar.getInstance().apply { set(Calendar.DAY_OF_MONTH, 1) }
     val startOffset = ((firstDayCalendar.get(Calendar.DAY_OF_WEEK) - Calendar.MONDAY + 7) % 7)
 

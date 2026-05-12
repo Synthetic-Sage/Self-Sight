@@ -5,6 +5,10 @@ import java.security.MessageDigest
 import javax.crypto.Cipher
 import javax.crypto.spec.SecretKeySpec
 
+/**
+ * Utility class for AES-256 encryption and decryption.
+ * Primarily used to secure JSON backup exports with a user-defined password.
+ */
 object AESUtils {
 
     private fun generateKey(password: String): SecretKeySpec {
