@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.diary.mirroroftruth",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 3,
+      "versionName": "3.1.2",
+      "outputFile": "MirrorOfTruth-CrashCatcher-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

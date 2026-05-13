@@ -84,6 +84,7 @@ class JournalViewModel @Inject constructor(
                 currentDate = date,
                 isPastDate = isPast,
                 // Clear input state — will be refilled from DB if an entry exists
+                entryId = 0,
                 selectedTags = emptyList(),
                 wentWell = "",
                 toImprove = "",
@@ -103,6 +104,7 @@ class JournalViewModel @Inject constructor(
                 if (entry != null) {
                     _state.update {
                         it.copy(
+                            entryId = entry.id,          // ← store real DB id for correct upsert
                             selectedTags = entry.emotionTags,
                             wentWell = entry.wentWell,
                             toImprove = entry.toImprove,
@@ -202,6 +204,7 @@ class JournalViewModel @Inject constructor(
         val current = _state.value
         viewModelScope.launch {
             val entry = JournalEntry(
+                id = current.entryId,    // ← use stored id: 0 = new insert, non-zero = update existing row
                 date = viewingDate,
                 emotionTags = current.selectedTags,
                 content = current.additionalAnswers.joinToString("|~|"),
