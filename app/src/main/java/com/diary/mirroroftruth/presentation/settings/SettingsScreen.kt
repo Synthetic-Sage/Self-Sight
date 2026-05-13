@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.FormatSize
 import androidx.compose.material.icons.filled.IosShare
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Schedule
 import androidx.compose.material.icons.filled.Star
@@ -107,6 +108,39 @@ fun SettingsScreen(
             },
             dismissButton = {
                 TextButton(onClick = { onEvent(SettingsEvent.OnDismissDialog) }) { Text("Cancel") }
+            },
+            containerColor = MaterialTheme.colorScheme.surface
+        )
+    }
+
+    if (state.showSetPinDialog) {
+        var pin by remember { mutableStateOf("") }
+        AlertDialog(
+            onDismissRequest = { onEvent(SettingsEvent.OnDismissPinDialog) },
+            title = { Text("Set App PIN") },
+            text = {
+                Column {
+                    Text("Enter a 4-digit PIN to lock your journal.")
+                    Spacer(Modifier.height(16.dp))
+                    OutlinedTextField(
+                        value = pin,
+                        onValueChange = { if (it.length <= 4 && it.all { c -> c.isDigit() }) pin = it },
+                        singleLine = true,
+                        label = { Text("4-Digit PIN") },
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                            keyboardType = androidx.compose.ui.text.input.KeyboardType.Number
+                        )
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = pin.length == 4,
+                    onClick = { onEvent(SettingsEvent.OnSetPin(pin)) }
+                ) { Text("Set PIN") }
+            },
+            dismissButton = {
+                TextButton(onClick = { onEvent(SettingsEvent.OnDismissPinDialog) }) { Text("Cancel") }
             },
             containerColor = MaterialTheme.colorScheme.surface
         )
@@ -212,6 +246,31 @@ fun SettingsScreen(
 
             // ── Journal Customisation ─────────────────────────────────────────
             item { SectionHeader("Journal Customisation") }
+
+            item {
+                Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                    Text(
+                        text = "Journal Name",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        text = "Personalize your journal header",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = state.diaryName,
+                        onValueChange = { onEvent(SettingsEvent.OnDiaryNameChanged(it)) },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        placeholder = { Text("e.g. My Secret Diary") },
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                }
+            }
+            item { SectionDivider() }
 
             item {
                 SwitchRow(
@@ -433,6 +492,49 @@ fun SettingsScreen(
                     Icon(Icons.Default.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text("Add a question")
+                }
+            }
+
+            // ── Security ─────────────────────────────────────────────────────
+            item { SectionHeader("Security") }
+            item {
+                SwitchRow(
+                    icon = Icons.Default.Lock,
+                    label = "App Lock",
+                    sublabel = "Require PIN or Fingerprint to open the app",
+                    checked = state.pinEnabled,
+                    onCheckedChange = {
+                        if (state.pinEnabled) {
+                            onEvent(SettingsEvent.OnRemovePin)
+                        } else {
+                            onEvent(SettingsEvent.OnShowSetPinDialog)
+                        }
+                    }
+                )
+            }
+            if (state.pinEnabled) {
+                item {
+                    ActionRow(
+                        icon = Icons.Default.Edit,
+                        label = "Change PIN",
+                        sublabel = "Update your 4-digit security code",
+                        onClick = { onEvent(SettingsEvent.OnShowSetPinDialog) }
+                    )
+                }
+            }
+            item {
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 4.dp)
+                        .clip(RoundedCornerShape(8.dp))
+                        .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                        .padding(10.dp)
+                ) {
+                    Text(
+                        text = "🔒 Your data is stored locally. If you forget your PIN, you can use your device's fingerprint/face ID to unlock.",
+                        style = MaterialTheme.typography.bodySmall.copy(fontStyle = FontStyle.Italic),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
                 }
             }
 

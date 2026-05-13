@@ -52,6 +52,7 @@ import org.burnoutcrew.reorderable.*
 @Composable
 fun HomeScreen(
     state: HomeState,
+    diaryName: String,
     onEvent: (HomeEvent) -> Unit
 ) {
     val dateFormatter = SimpleDateFormat("EEEE, MMMM d", Locale.getDefault())
@@ -96,20 +97,30 @@ fun HomeScreen(
                 title = {
                     Column {
                         Text(
-                            text = "Self Sight",
+                            text = diaryName,
                             style = MaterialTheme.typography.titleLarge.copy(
                                 fontWeight = FontWeight.Bold,
-                                fontStyle = FontStyle.Italic,
                                 fontSize = 26.sp,
-                                letterSpacing = 1.5.sp
+                                letterSpacing = 1.sp
                             ),
                             color = MaterialTheme.colorScheme.primary
                         )
-                        Text(
-                            text = todayString,
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = "Self Sight",
+                                style = MaterialTheme.typography.labelMedium.copy(
+                                    fontStyle = FontStyle.Italic,
+                                    fontWeight = FontWeight.Light
+                                ),
+                                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f)
+                            )
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                text = "•  $todayString",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(

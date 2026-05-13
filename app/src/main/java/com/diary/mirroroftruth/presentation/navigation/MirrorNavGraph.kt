@@ -42,7 +42,13 @@ fun MirrorNavGraph(
         composable(route = Screen.Home.route) {
             val viewModel: HomeViewModel = hiltViewModel()
             val state by viewModel.state.collectAsState()
-            HomeScreen(state = state, onEvent = viewModel::onEvent)
+            val settingsViewModel: SettingsViewModel = hiltViewModel()
+            val settingsState by settingsViewModel.state.collectAsState()
+            HomeScreen(
+                state = state, 
+                diaryName = settingsState.diaryName,
+                onEvent = viewModel::onEvent
+            )
         }
 
         composable(

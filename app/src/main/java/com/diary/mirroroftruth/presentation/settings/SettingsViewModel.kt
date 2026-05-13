@@ -50,7 +50,13 @@ data class SettingsState(
     val selectedFont: String = "Modern",
     // Custom journal prompts
     val journalPrompts: List<String> = listOf("What went well today?", "Things to improve", "Today's learning"),
-    val editingPromptIndex: Int? = null   // null = not editing
+    val editingPromptIndex: Int? = null,   // null = not editing
+    // Diary personalisation
+    val diaryName: String = "My Journal",  // user-chosen name shown on Home screen
+    // PIN lock
+    val pinEnabled: Boolean = false,
+    val showSetPinDialog: Boolean = false,
+    val showRemovePinDialog: Boolean = false,
 )
 
 enum class PendingAction { EXPORT, IMPORT }
@@ -74,6 +80,13 @@ sealed interface SettingsEvent {
     data class OnEditPrompt(val index: Int, val newText: String) : SettingsEvent
     data class OnDeletePrompt(val index: Int) : SettingsEvent
     data class OnStartEditingPrompt(val index: Int?) : SettingsEvent
+    // Diary personalisation
+    data class OnDiaryNameChanged(val name: String) : SettingsEvent
+    // PIN lock
+    data class OnSetPin(val pin: String) : SettingsEvent
+    object OnRemovePin : SettingsEvent
+    object OnShowSetPinDialog : SettingsEvent
+    object OnDismissPinDialog : SettingsEvent
 }
 
 /**
@@ -104,6 +117,8 @@ class SettingsViewModel @Inject constructor(
         val KEY_LEARNING     = booleanPreferencesKey("show_learning")
         val KEY_FONT         = stringPreferencesKey("selected_font")
         val KEY_PROMPTS      = stringPreferencesKey("journal_prompts")  // pipe-separated
+        val KEY_DIARY_NAME   = stringPreferencesKey("diary_name")
+        val KEY_PIN_HASH     = stringPreferencesKey("pin_hash")         // SHA-256 hash of PIN
         val DEFAULT_PROMPTS  = listOf("What went well today?", "Things to improve", "Today's learning")
     }
 
@@ -118,7 +133,9 @@ class SettingsViewModel @Inject constructor(
                         showToImprovePrompt = prefs[KEY_TO_IMPROVE]  ?: true,
                         showLearningPrompt  = prefs[KEY_LEARNING]    ?: true,
                         selectedFont        = prefs[KEY_FONT]        ?: "Modern",
-                        journalPrompts      = savedPrompts
+                        journalPrompts      = savedPrompts,
+                        diaryName           = prefs[KEY_DIARY_NAME]  ?: "My Journal",
+                        pinEnabled          = prefs[KEY_PIN_HASH]?.isNotEmpty() ?: false
                     )
                 }
             }
@@ -164,6 +181,29 @@ class SettingsViewModel @Inject constructor(
             }
             is SettingsEvent.OnDeletePrompt       -> savePrompts(_state.value.journalPrompts.filterIndexed { i, _ -> i != event.index })
             is SettingsEvent.OnStartEditingPrompt -> _state.update { it.copy(editingPromptIndex = event.index) }
+            // Diary name
+            is SettingsEvent.OnDiaryNameChanged   -> {
+                _state.update { it.copy(diaryName = event.name) }
+                viewModelScope.launch {
+                    context.settingsDataStore.edit { prefs -> prefs[KEY_DIARY_NAME] = event.name }
+                }
+            }
+            // PIN
+            is SettingsEvent.OnShowSetPinDialog   -> _state.update { it.copy(showSetPinDialog = true) }
+            is SettingsEvent.OnDismissPinDialog   -> _state.update { it.copy(showSetPinDialog = false, showRemovePinDialog = false) }
+            is SettingsEvent.OnSetPin             -> {
+                val hash = hashPin(event.pin)
+                viewModelScope.launch {
+                    context.settingsDataStore.edit { prefs -> prefs[KEY_PIN_HASH] = hash }
+                }
+                _state.update { it.copy(pinEnabled = true, showSetPinDialog = false) }
+            }
+            is SettingsEvent.OnRemovePin          -> {
+                viewModelScope.launch {
+                    context.settingsDataStore.edit { prefs -> prefs[KEY_PIN_HASH] = "" }
+                }
+                _state.update { it.copy(pinEnabled = false) }
+            }
         }
     }
 
@@ -180,6 +220,28 @@ class SettingsViewModel @Inject constructor(
         viewModelScope.launch {
             context.settingsDataStore.edit { it[key] = newVal }
         }
+    }
+
+    // ── PIN helpers ───────────────────────────────────────────────────────────
+
+    /** Hash a PIN with SHA-256 so the raw digits are never stored */
+    private fun hashPin(pin: String): String {
+        val bytes = java.security.MessageDigest.getInstance("SHA-256").digest(pin.toByteArray(Charsets.UTF_8))
+        return bytes.joinToString("") { "%02x".format(it) }
+    }
+
+    /**
+     * Verify a user-entered PIN against the stored hash.
+     * Called by the LockScreen composable via this ViewModel.
+     */
+    suspend fun verifyPin(pin: String): Boolean {
+        val storedHash = context.settingsDataStore.data.first()[KEY_PIN_HASH] ?: return false
+        return storedHash == hashPin(pin)
+    }
+
+    /** Read the stored PIN hash directly (used by MainActivity to decide if lock screen needed) */
+    suspend fun isPinEnabled(): Boolean {
+        return context.settingsDataStore.data.first()[KEY_PIN_HASH]?.isNotEmpty() == true
     }
 
     private fun clearAllData() {

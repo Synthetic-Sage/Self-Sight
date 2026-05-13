@@ -27,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import coil.compose.AsyncImage
 import java.io.File
+import com.diary.mirroroftruth.presentation.journal.components.JournalPageBackground
 import com.diary.mirroroftruth.presentation.journal.components.JournalPromptField
 import com.diary.mirroroftruth.presentation.journal.components.MoodSelector
 import java.text.SimpleDateFormat
@@ -172,13 +173,18 @@ fun JournalScreen(
             )
         }
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(20.dp)
-        ) {
+        // Box layers: doodle background (bottom) + scrollable content (top)
+        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+            // Decorative stickers seeded by the current date — redraws per day
+            JournalPageBackground(
+                dateSeed = state.currentDate,
+                modifier = Modifier.matchParentSize()
+            )
+            LazyColumn(
+                modifier = Modifier.fillMaxSize(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(20.dp)
+            ) {
             // ── Photo Memory ──────────────────────────────────────────────────
             item {
                 if (state.imagePath != null) {
@@ -453,6 +459,7 @@ fun JournalScreen(
                 // Bottom breathing room for past entries
                 item { Spacer(modifier = Modifier.height(32.dp)) }
             }
-        }
+        }   // end LazyColumn
+        }   // end Box (background + content)
     }
 }
